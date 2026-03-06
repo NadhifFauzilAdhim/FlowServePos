@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Menu;
 use Illuminate\Support\Facades\DB;
 
 class OrderService
@@ -13,7 +12,7 @@ class OrderService
 
     public function calculateTotals(array $cartItems, float $discount = 0): array
     {
-        $subtotal = collect($cartItems)->sum(fn($item) => $item['price'] * $item['quantity']);
+        $subtotal = collect($cartItems)->sum(fn ($item) => $item['price'] * $item['quantity']);
         $taxAmount = round($subtotal * (self::TAX_RATE / 100), 2);
         $total = $subtotal + $taxAmount - $discount;
 
