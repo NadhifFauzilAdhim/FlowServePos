@@ -115,6 +115,14 @@
                             <span
                                 class="{{ request()->routeIs('users') ? 'text-primary drop-shadow-[0_0_4px_rgba(212,115,17,0.3)]' : 'text-gray-200' }} text-sm font-medium leading-normal">Users</span>
                         </a>
+
+                        <a href="{{ route('tables') }}" wire:navigate
+                            class="flex items-center gap-3 px-3 py-2 rounded-lg {{ request()->routeIs('tables') ? 'bg-primary/20 border border-primary/30 shadow-[inset_0_0_12px_rgba(212,115,17,0.2)]' : 'hover:bg-white/10 border border-transparent hover:border-white/5' }} transition-all">
+                            <span
+                                class="material-symbols-outlined {{ request()->routeIs('tables') ? 'text-primary drop-shadow-[0_0_8px_rgba(212,115,17,0.5)]' : 'text-gray-400' }}">table_restaurant</span>
+                            <span
+                                class="{{ request()->routeIs('tables') ? 'text-primary drop-shadow-[0_0_4px_rgba(212,115,17,0.3)]' : 'text-gray-200' }} text-sm font-medium leading-normal">Tables</span>
+                        </a>
                     @endrole
                 </div>
             </div>
@@ -167,6 +175,7 @@
     </div>
 
     @livewireScripts
+    @stack('scripts')
 </body>
 
 </html>

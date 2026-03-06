@@ -82,8 +82,17 @@
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-400">Cashier</span>
-                    <span class="text-gray-200 font-medium">{{ $order->user->name }}</span>
+                    <span class="text-gray-200 font-medium">{{ $order->user?->name ?? 'Guest (QR Order)' }}</span>
                 </div>
+                @if ($order->table_number)
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Table</span>
+                        <span class="inline-flex items-center gap-1 text-primary font-bold">
+                            <span class="material-symbols-outlined text-[14px]">table_restaurant</span>
+                            Meja #{{ $order->table_number }}
+                        </span>
+                    </div>
+                @endif
             </div>
 
             <hr class="border-white/10 mb-5">

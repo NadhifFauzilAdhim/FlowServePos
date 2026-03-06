@@ -11,6 +11,7 @@ use Livewire\Component;
 class KitchenDisplay extends Component
 {
     public int $previousCount = 0;
+
     public bool $hasNewOrder = false;
 
     public function markPreparing(int $orderId): void

@@ -68,6 +68,45 @@ class OrderService
         });
     }
 
+    public function createGuestOrder(
+        array $cartItems,
+        int $tableNumber,
+        ?string $notes = null
+    ): Order {
+        return DB::transaction(function () use ($cartItems, $tableNumber, $notes) {
+            $totals = $this->calculateTotals($cartItems);
+
+            $order = Order::create([
+                'user_id' => null,
+                'order_number' => Order::generateOrderNumber(),
+                'order_type' => 'dine_in',
+                'table_number' => $tableNumber,
+                'subtotal' => $totals['subtotal'],
+                'tax_rate' => $totals['tax_rate'],
+                'tax_amount' => $totals['tax_amount'],
+                'discount_amount' => 0,
+                'total' => $totals['total'],
+                'amount_received' => $totals['total'],
+                'change_amount' => 0,
+                'status' => 'waiting_confirmation',
+                'notes' => $notes,
+            ]);
+
+            foreach ($cartItems as $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'menu_id' => $item['menu_id'],
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['price'],
+                    'subtotal' => $item['price'] * $item['quantity'],
+                    'notes' => $item['notes'] ?? null,
+                ]);
+            }
+
+            return $order->load('items.menu');
+        });
+    }
+
     public function cancelOrder(Order $order): void
     {
         $order->update(['status' => 'cancelled']);

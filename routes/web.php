@@ -11,6 +11,8 @@ use App\Livewire\Admin\CategoryManagement;
 use App\Livewire\Admin\InventoryManagement;
 use App\Livewire\Reports\SalesReport;
 use App\Livewire\Kitchen\KitchenDisplay;
+use App\Livewire\Admin\TableManagement;
+use App\Livewire\Guest\GuestOrder;
 use App\Http\Controllers\ReportExportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +28,9 @@ Route::post('/logout', function () {
     session()->regenerateToken();
     return redirect()->route('login');
 })->middleware('auth')->name('logout');
+
+// Public guest ordering route (no auth required)
+Route::get('/order/{token}', GuestOrder::class)->name('guest.order');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
@@ -44,5 +49,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/export/pdf', [ReportExportController::class, 'pdf'])->name('reports.pdf');
         Route::get('/reports/export/excel', [ReportExportController::class, 'excel'])->name('reports.excel');
         Route::get('/users', Register::class)->name('users');
+        Route::get('/tables', TableManagement::class)->name('tables');
     });
 });

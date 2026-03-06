@@ -23,6 +23,7 @@
             <select wire:model.live="statusFilter"
                 class="w-full rounded-lg border border-white/10 bg-black/40 text-white h-9 px-3 text-sm focus:border-primary/50 focus:outline-none focus:ring-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
                 <option value="">All Status</option>
+                <option value="waiting_confirmation">Waiting Confirmation</option>
                 <option value="pending">Pending</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
@@ -53,6 +54,8 @@
                         <th class="text-left text-gray-400 text-xs font-semibold uppercase tracking-wider py-4 px-5">
                             Type</th>
                         <th class="text-left text-gray-400 text-xs font-semibold uppercase tracking-wider py-4 px-5">
+                            Table</th>
+                        <th class="text-left text-gray-400 text-xs font-semibold uppercase tracking-wider py-4 px-5">
                             Items</th>
                         <th class="text-left text-gray-400 text-xs font-semibold uppercase tracking-wider py-4 px-5">
                             Total</th>
@@ -77,12 +80,25 @@
                                     {{ ucfirst(str_replace('_', ' ', $order->order_type)) }}
                                 </span>
                             </td>
+                            <td class="py-3.5 px-5">
+                                @if ($order->table_number)
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/20 border border-primary/30 text-primary">
+                                        <span class="material-symbols-outlined text-[12px]">table_restaurant</span>
+                                        #{{ $order->table_number }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-500 text-sm">—</span>
+                                @endif
+                            </td>
                             <td class="py-3.5 px-5 text-gray-300 text-sm">{{ $order->items->count() }}</td>
                             <td class="py-3.5 px-5 text-white text-sm font-bold">Rp
                                 {{ number_format($order->total, 0, ',', '.') }}</td>
                             <td class="py-3.5 px-5">
                                 @php
                                     $statusColors = [
+                                        'waiting_confirmation' =>
+                                            'bg-orange-500/20 text-orange-400 border-orange-500/30',
                                         'pending' => 'bg-amber-500/20 text-amber-400 border-amber-500/30',
                                         'completed' => 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
                                         'cancelled' => 'bg-red-500/20 text-red-400 border-red-500/30',
@@ -93,7 +109,7 @@
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </td>
-                            <td class="py-3.5 px-5 text-gray-300 text-sm">{{ $order->user->name }}</td>
+                            <td class="py-3.5 px-5 text-gray-300 text-sm">{{ $order->user?->name ?? 'Guest' }}</td>
                             <td class="py-3.5 px-5 text-right">
                                 <a href="{{ route('orders.detail', $order) }}" wire:navigate
                                     class="text-primary hover:text-primary-light text-sm font-medium transition-colors">
@@ -103,7 +119,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-12 text-center">
+                            <td colspan="9" class="py-12 text-center">
                                 <span
                                     class="material-symbols-outlined text-4xl text-gray-600 mb-2 block">receipt_long</span>
                                 <p class="text-gray-500 text-sm">No orders found</p>

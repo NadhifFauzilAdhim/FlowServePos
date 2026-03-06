@@ -58,8 +58,16 @@
                             <div class="flex items-center gap-2 mt-0.5">
                                 <span
                                     class="text-gray-400 text-xs">{{ ucfirst(str_replace('_', ' ', $order->order_type)) }}</span>
+                                @if ($order->table_number)
+                                    <span class="text-gray-600">•</span>
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold">
+                                        <span class="material-symbols-outlined text-[12px]">table_restaurant</span>
+                                        Meja #{{ $order->table_number }}
+                                    </span>
+                                @endif
                                 <span class="text-gray-600">•</span>
-                                <span class="text-gray-400 text-xs">{{ $order->user->name }}</span>
+                                <span class="text-gray-400 text-xs">{{ $order->user?->name ?? 'Guest' }}</span>
                             </div>
                         </div>
                         <div class="flex flex-col items-end gap-1">
@@ -124,8 +132,16 @@
                             <div class="flex items-center gap-2 mt-0.5">
                                 <span
                                     class="text-gray-400 text-xs">{{ ucfirst(str_replace('_', ' ', $order->order_type)) }}</span>
+                                @if ($order->table_number)
+                                    <span class="text-gray-600">•</span>
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold">
+                                        <span class="material-symbols-outlined text-[12px]">table_restaurant</span>
+                                        Meja #{{ $order->table_number }}
+                                    </span>
+                                @endif
                                 <span class="text-gray-600">•</span>
-                                <span class="text-gray-400 text-xs">{{ $order->user->name }}</span>
+                                <span class="text-gray-400 text-xs">{{ $order->user?->name ?? 'Guest' }}</span>
                             </div>
                         </div>
                         <span class="text-blue-400 text-sm font-bold font-mono flex items-center gap-1">
@@ -178,6 +194,14 @@
                             <div class="flex items-center gap-2 mt-0.5">
                                 <span
                                     class="text-gray-400 text-xs">{{ ucfirst(str_replace('_', ' ', $order->order_type)) }}</span>
+                                @if ($order->table_number)
+                                    <span class="text-gray-600">•</span>
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold">
+                                        <span class="material-symbols-outlined text-[12px]">table_restaurant</span>
+                                        Meja #{{ $order->table_number }}
+                                    </span>
+                                @endif
                             </div>
                         </div>
                         <span class="text-emerald-400 text-sm font-bold font-mono flex items-center gap-1">

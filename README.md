@@ -1,59 +1,145 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# POS Cafe System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+POS Cafe System is a modern web-based Point of Sale (POS) application built using Laravel and Livewire. This system is designed to help cafés, restaurants, or small food businesses manage orders, menus, kitchen workflows, and sales reports efficiently.
 
-## About Laravel
+The application focuses on speed, simplicity, and a clean dashboard interface that supports daily cashier and kitchen operations.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Order Management  
+  Cashiers can create orders quickly through an interactive POS interface. The system automatically calculates subtotal, tax, discount, total payment, and change.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Menu Management  
+  Administrators can add, update, delete, and organize menu items. Each menu includes details such as name, category, price, description, and image.
 
-## Learning Laravel
+- Kitchen Display System (KDS)  
+  Kitchen staff can monitor incoming orders in real time. Orders appear automatically after being confirmed by the cashier, allowing kitchen staff to manage preparation efficiently.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- Real-time Order Status  
+  Kitchen staff can update the order status such as Pending, Preparing, and Ready, and the cashier interface will reflect the status changes.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Sales Report  
+  The system provides reports such as daily sales, weekly sales, monthly sales, and best-selling menu items to help analyze business performance.
 
-## Laravel Sponsors
+- Dashboard Analytics  
+  The dashboard displays key business metrics including total orders, daily revenue, and popular menu items.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Inventory Tracking (optional module)  
+  Track stock usage and manage inventory levels for menu ingredients.
 
-### Premium Partners
+- Responsive Dashboard Interface  
+  Designed with a modern dashboard layout optimized for cashier and operational workflows.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Technology Stack
 
-## Contributing
+- Backend: Laravel  
+- Frontend: Laravel Livewire  
+- Styling: TailwindCSS  
+- Database: MySQL  
+- Real-time updates: Livewire polling or broadcasting
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## System Modules
 
-## Code of Conduct
+- Authentication and Role Management
+- POS Order Interface
+- Menu Management
+- Kitchen Display System
+- Order Tracking
+- Sales Reporting
+- Dashboard Analytics
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Project Structure
 
-## Security Vulnerabilities
+The application follows a modular Laravel structure to maintain clean architecture and scalable code.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```
+app/
+ ├── Livewire
+ │   ├── POS
+ │   ├── Menu
+ │   ├── Kitchen
+ │   ├── Orders
+ │   └── Dashboard
+ │
+ ├── Services
+ │   ├── OrderService
+ │   ├── MenuService
+ │   └── ReportService
+ │
+ ├── Models
+ └── Http
+     └── Requests
+```
+
+Business logic is placed inside service classes while Livewire components handle UI interaction.
+
+## Installation
+
+Clone the repository
+
+```
+git clone https://github.com/yourusername/pos-cafe-system.git
+```
+
+Go to the project directory
+
+```
+cd pos-cafe-system
+```
+
+Install dependencies
+
+```
+composer install
+```
+
+Copy environment file
+
+```
+cp .env.example .env
+```
+
+Generate application key
+
+```
+php artisan key:generate
+```
+
+Configure your database in `.env` file.
+
+Run migrations
+
+```
+php artisan migrate
+```
+
+Start the development server
+
+```
+php artisan serve
+```
+
+## Usage
+
+1. Login to the system.
+2. Add menu items from the Menu Management page.
+3. Use the POS interface to create customer orders.
+4. Confirm orders so they appear in the Kitchen Display System.
+5. Kitchen staff can update order status during preparation.
+6. View sales performance from the reporting dashboard.
+
+## Future Improvements
+
+- QR ordering system
+- Multi-outlet support
+- Offline mode for POS
+- Customer loyalty system
+- Receipt printing integration
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-source and available under the MIT License.
+
+## Author
+
+Developed by Nadhif Fauzil

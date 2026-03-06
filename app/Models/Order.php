@@ -23,6 +23,7 @@ class Order extends Model
         'total',
         'amount_received',
         'change_amount',
+        'table_number',
         'status',
         'notes',
     ];
@@ -78,6 +79,11 @@ class Order extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereIn('status', ['pending', 'preparing', 'ready']);
+    }
+
+    public function scopeWaitingConfirmation(Builder $query): Builder
+    {
+        return $query->where('status', 'waiting_confirmation');
     }
 
     public function getFormattedTotalAttribute(): string
