@@ -10,6 +10,7 @@ use App\Livewire\Admin\MenuManagement;
 use App\Livewire\Admin\CategoryManagement;
 use App\Livewire\Admin\InventoryManagement;
 use App\Livewire\Reports\SalesReport;
+use App\Livewire\Kitchen\KitchenDisplay;
 use App\Http\Controllers\ReportExportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +31,7 @@ Route::post('/logout', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
     Route::get('/pos', OrderBoard::class)->name('pos');
+    Route::get('/kitchen', KitchenDisplay::class)->name('kitchen');
     Route::get('/orders', OrderList::class)->name('orders');
     Route::get('/orders/{order}', OrderDetail::class)->name('orders.detail');
 

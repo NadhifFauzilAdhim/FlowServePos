@@ -58,147 +58,175 @@
         {{-- Sales Trend --}}
         <div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-lg">
             <h3 class="text-white text-lg font-bold mb-5">Sales Trend (Last 7 Days)</h3>
-            <div class="h-64">
-                <canvas id="salesTrendChart"></canvas>
-            </div>
+            <div id="salesTrendChart" class="h-64"></div>
         </div>
 
         {{-- Popular Items --}}
         <div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-lg">
             <h3 class="text-white text-lg font-bold mb-5">Popular Items</h3>
-            <div class="h-64">
-                <canvas id="popularItemsChart"></canvas>
-            </div>
+            <div id="popularItemsChart" class="h-64"></div>
         </div>
     </div>
 </div>
 
 @script
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script>
         // Sales Trend Chart
-        const salesCtx = document.getElementById('salesTrendChart');
-        if (salesCtx) {
-            new Chart(salesCtx, {
-                type: 'line',
-                data: {
-                    labels: @json($salesTrend['labels']),
-                    datasets: [{
-                        label: 'Revenue (Rp)',
-                        data: @json($salesTrend['data']),
-                        borderColor: '#d47311',
-                        backgroundColor: 'rgba(212, 115, 17, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#d47311',
-                        pointBorderColor: '#d47311',
-                        pointRadius: 4,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
+        const salesEl = document.querySelector('#salesTrendChart');
+        if (salesEl) {
+            new ApexCharts(salesEl, {
+                chart: {
+                    type: 'area',
+                    height: '100%',
+                    background: 'transparent',
+                    toolbar: {
+                        show: false
                     },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(255,255,255,0.05)'
-                            },
-                            ticks: {
-                                color: '#9ca3af',
-                                font: {
-                                    family: 'Manrope'
-                                }
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(255,255,255,0.05)'
-                            },
-                            ticks: {
-                                color: '#9ca3af',
-                                font: {
-                                    family: 'Manrope'
-                                },
-                                callback: function(value) {
-                                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
-                                }
-                            }
+                    fontFamily: 'Manrope, sans-serif',
+                },
+                series: [{
+                    name: 'Revenue',
+                    data: @json($salesTrend['data']),
+                }],
+                labels: @json($salesTrend['labels']),
+                colors: ['#d47311'],
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.05,
+                        stops: [0, 100],
+                    },
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2.5
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                grid: {
+                    borderColor: 'rgba(255,255,255,0.06)',
+                    xaxis: {
+                        lines: {
+                            show: false
                         }
+                    },
+                },
+                xaxis: {
+                    labels: {
+                        style: {
+                            colors: '#9ca3af',
+                            fontSize: '11px'
+                        }
+                    },
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#9ca3af',
+                            fontSize: '11px'
+                        },
+                        formatter: v => 'Rp ' + new Intl.NumberFormat('id-ID').format(v),
+                    },
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: v => 'Rp ' + new Intl.NumberFormat('id-ID').format(v)
+                    },
+                },
+                markers: {
+                    size: 4,
+                    strokeWidth: 0,
+                    hover: {
+                        size: 6
                     }
-                }
-            });
+                },
+                theme: {
+                    mode: 'dark'
+                },
+            }).render();
         }
 
         // Popular Items Chart
-        const popCtx = document.getElementById('popularItemsChart');
-        if (popCtx) {
-            new Chart(popCtx, {
-                type: 'bar',
-                data: {
-                    labels: @json($popularItems['labels']),
-                    datasets: [{
-                        label: 'Quantity Sold',
-                        data: @json($popularItems['data']),
-                        backgroundColor: [
-                            'rgba(212, 115, 17, 0.7)',
-                            'rgba(168, 85, 247, 0.7)',
-                            'rgba(59, 130, 246, 0.7)',
-                            'rgba(16, 185, 129, 0.7)',
-                            'rgba(244, 63, 94, 0.7)',
-                        ],
-                        borderColor: [
-                            '#d47311',
-                            '#a855f7',
-                            '#3b82f6',
-                            '#10b981',
-                            '#f43f5e',
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 8,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
+        const popEl = document.querySelector('#popularItemsChart');
+        if (popEl) {
+            new ApexCharts(popEl, {
+                chart: {
+                    type: 'bar',
+                    height: '100%',
+                    background: 'transparent',
+                    toolbar: {
+                        show: false
                     },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(255,255,255,0.05)'
-                            },
-                            ticks: {
-                                color: '#9ca3af',
-                                font: {
-                                    family: 'Manrope'
-                                }
-                            }
-                        },
-                        y: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: '#e5e7eb',
-                                font: {
-                                    family: 'Manrope',
-                                    weight: 500
-                                }
-                            }
+                    fontFamily: 'Manrope, sans-serif',
+                },
+                series: [{
+                    name: 'Qty Sold',
+                    data: @json($popularItems['data']),
+                }],
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        borderRadius: 6,
+                        barHeight: '60%',
+                        distributed: true,
+                    },
+                },
+                colors: ['#d47311', '#a855f7', '#3b82f6', '#10b981', '#f43f5e'],
+                labels: @json($popularItems['labels']),
+                dataLabels: {
+                    enabled: false
+                },
+                grid: {
+                    borderColor: 'rgba(255,255,255,0.06)',
+                    yaxis: {
+                        lines: {
+                            show: false
                         }
-                    }
-                }
-            });
+                    },
+                },
+                xaxis: {
+                    labels: {
+                        style: {
+                            colors: '#9ca3af',
+                            fontSize: '11px'
+                        }
+                    },
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#e5e7eb',
+                            fontSize: '12px',
+                            fontWeight: 500
+                        }
+                    },
+                },
+                legend: {
+                    show: false
+                },
+                tooltip: {
+                    theme: 'dark'
+                },
+                theme: {
+                    mode: 'dark'
+                },
+            }).render();
         }
     </script>
 @endscript

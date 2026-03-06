@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
@@ -51,6 +52,14 @@
                             class="material-symbols-outlined {{ request()->routeIs('pos') ? 'text-primary drop-shadow-[0_0_8px_rgba(212,115,17,0.5)]' : 'text-gray-400' }}">point_of_sale</span>
                         <span
                             class="{{ request()->routeIs('pos') ? 'text-primary drop-shadow-[0_0_4px_rgba(212,115,17,0.3)]' : 'text-gray-200' }} text-sm font-medium leading-normal">POS</span>
+                    </a>
+
+                    <a href="{{ route('kitchen') }}" wire:navigate
+                        class="flex items-center gap-3 px-3 py-2 rounded-lg {{ request()->routeIs('kitchen') ? 'bg-primary/20 border border-primary/30 shadow-[inset_0_0_12px_rgba(212,115,17,0.2)]' : 'hover:bg-white/10 border border-transparent hover:border-white/5' }} transition-all">
+                        <span
+                            class="material-symbols-outlined {{ request()->routeIs('kitchen') ? 'text-primary drop-shadow-[0_0_8px_rgba(212,115,17,0.5)]' : 'text-gray-400' }}">soup_kitchen</span>
+                        <span
+                            class="{{ request()->routeIs('kitchen') ? 'text-primary drop-shadow-[0_0_4px_rgba(212,115,17,0.3)]' : 'text-gray-200' }} text-sm font-medium leading-normal">Kitchen</span>
                     </a>
 
                     <a href="{{ route('orders') }}" wire:navigate

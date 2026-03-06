@@ -58,9 +58,7 @@
         {{-- Revenue Chart --}}
         <div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-lg">
             <h3 class="text-white text-lg font-bold mb-5">Revenue Chart</h3>
-            <div class="h-72">
-                <canvas id="revenueChart"></canvas>
-            </div>
+            <div id="revenueChart" class="h-72"></div>
         </div>
 
         {{-- Best Sellers --}}
@@ -89,60 +87,88 @@
 </div>
 
 @script
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script>
-        const ctx = document.getElementById('revenueChart');
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: @json($salesData['labels']),
-                    datasets: [{
-                        label: 'Revenue (Rp)',
-                        data: @json($salesData['revenue']),
-                        backgroundColor: 'rgba(212, 115, 17, 0.6)',
-                        borderColor: '#d47311',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                    }]
+        const chartEl = document.querySelector('#revenueChart');
+        if (chartEl) {
+            new ApexCharts(chartEl, {
+                chart: {
+                    type: 'bar',
+                    height: '100%',
+                    background: 'transparent',
+                    toolbar: {
+                        show: false
+                    },
+                    fontFamily: 'Manrope, sans-serif',
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
+                series: [{
+                    name: 'Revenue',
+                    data: @json($salesData['revenue']),
+                }],
+                labels: @json($salesData['labels']),
+                colors: ['#d47311'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 6,
+                        columnWidth: '55%',
+                    },
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: 'dark',
+                        type: 'vertical',
+                        shadeIntensity: 0.3,
+                        opacityFrom: 0.85,
+                        opacityTo: 0.65,
+                        stops: [0, 100],
+                    },
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                grid: {
+                    borderColor: 'rgba(255,255,255,0.06)',
+                    xaxis: {
+                        lines: {
+                            show: false
                         }
                     },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(255,255,255,0.05)'
-                            },
-                            ticks: {
-                                color: '#9ca3af',
-                                font: {
-                                    family: 'Manrope',
-                                    size: 10
-                                },
-                                maxRotation: 45
-                            }
+                },
+                xaxis: {
+                    labels: {
+                        style: {
+                            colors: '#9ca3af',
+                            fontSize: '10px'
                         },
-                        y: {
-                            grid: {
-                                color: 'rgba(255,255,255,0.05)'
-                            },
-                            ticks: {
-                                color: '#9ca3af',
-                                font: {
-                                    family: 'Manrope'
-                                },
-                                callback: v => 'Rp ' + new Intl.NumberFormat('id-ID').format(v)
-                            }
-                        }
-                    }
-                }
-            });
+                        rotate: -45,
+                        rotateAlways: false,
+                    },
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#9ca3af',
+                            fontSize: '11px'
+                        },
+                        formatter: v => 'Rp ' + new Intl.NumberFormat('id-ID').format(v),
+                    },
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: v => 'Rp ' + new Intl.NumberFormat('id-ID').format(v)
+                    },
+                },
+                theme: {
+                    mode: 'dark'
+                },
+            }).render();
         }
     </script>
 @endscript

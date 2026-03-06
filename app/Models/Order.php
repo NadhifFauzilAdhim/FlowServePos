@@ -65,6 +65,21 @@ class Order extends Model
         return $query->where('status', 'pending');
     }
 
+    public function scopePreparing(Builder $query): Builder
+    {
+        return $query->where('status', 'preparing');
+    }
+
+    public function scopeReady(Builder $query): Builder
+    {
+        return $query->where('status', 'ready');
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['pending', 'preparing', 'ready']);
+    }
+
     public function getFormattedTotalAttribute(): string
     {
         return 'Rp ' . number_format($this->total, 0, ',', '.');

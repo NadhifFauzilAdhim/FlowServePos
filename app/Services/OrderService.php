@@ -49,7 +49,7 @@ class OrderService
                 'total' => $totals['total'],
                 'amount_received' => $amountReceived,
                 'change_amount' => max(0, $changeAmount),
-                'status' => 'completed',
+                'status' => 'pending',
                 'notes' => $notes,
             ]);
 
@@ -71,6 +71,23 @@ class OrderService
     public function cancelOrder(Order $order): void
     {
         $order->update(['status' => 'cancelled']);
+    }
+
+    public function updateStatus(Order $order, string $status): void
+    {
+        $allowed = ['pending', 'preparing', 'ready', 'completed', 'cancelled'];
+        if (in_array($status, $allowed)) {
+            $order->update(['status' => $status]);
+        }
+    }
+
+    public function getKitchenOrders()
+    {
+        return Order::today()
+            ->active()
+            ->with('items.menu', 'user')
+            ->oldest()
+            ->get();
     }
 
     public function getTodayOrders()
