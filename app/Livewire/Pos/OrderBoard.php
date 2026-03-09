@@ -3,6 +3,7 @@
 namespace App\Livewire\Pos;
 
 use App\Models\Menu;
+use App\Models\Order;
 use App\Models\Setting;
 use App\Services\MenuService;
 use App\Services\OrderService;

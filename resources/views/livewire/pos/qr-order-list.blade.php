@@ -6,7 +6,7 @@
                 <div class="flex items-center gap-2">
                     <span
                         class="material-symbols-outlined text-amber-400 text-lg animate-pulse">notifications_active</span>
-                    <span class="text-amber-400 text-sm font-bold">Pesanan QR Masuk</span>
+                    <span class="text-amber-400 text-sm font-bold">QR Order Incoming</span>
                     <span
                         class="bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold px-2 py-0.5 rounded-full">
                         {{ $waitingOrders->count() }}
@@ -48,11 +48,11 @@
                             <div class="flex gap-1.5">
                                 <button wire:click="$parent.openRejectModal({{ $wo->id }})"
                                     class="px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-all">
-                                    Tolak
+                                    Reject
                                 </button>
                                 <button wire:click="$parent.confirmQrOrder({{ $wo->id }})"
                                     class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/30 transition-all flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">check</span> Konfirmasi
+                                    <span class="material-symbols-outlined text-[14px]">check</span> Confirm
                                 </button>
                             </div>
                         </div>
