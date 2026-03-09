@@ -3,7 +3,7 @@
 namespace App\Livewire\Pos;
 
 use App\Models\Menu;
-use App\Models\Order;
+use App\Models\Setting;
 use App\Services\MenuService;
 use App\Services\OrderService;
 use Illuminate\Support\Facades\Cache;
@@ -46,8 +46,19 @@ class OrderBoard extends Component
 
     public ?int $previousWaitingCount = null;
 
+    #[Computed]
+    public function isStoreOpen(): bool
+    {
+        return (bool) Setting::get('is_store_open', '1');
+    }
+
     public function addToCart(int $menuId): void
     {
+        if (! $this->isStoreOpen) {
+            session()->flash('error', 'Toko Sedang Tutup.');
+            return;
+        }
+
         $menu = Menu::find($menuId);
         if (! $menu || ! $menu->is_available) {
             return;
@@ -136,6 +147,11 @@ class OrderBoard extends Component
 
     public function openPaymentModal(): void
     {
+        if (! $this->isStoreOpen) {
+            session()->flash('error', 'Toko Sedang Tutup.');
+            return;
+        }
+
         if (empty($this->cart)) {
             return;
         }

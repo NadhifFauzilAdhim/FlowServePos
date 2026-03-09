@@ -14,7 +14,7 @@ class QrOrderList extends Component
     #[On('qr-orders-updated')]
     public function render()
     {
-        $waitingOrders = Cache::remember('pos_waiting_orders', 60, function () {
+        $waitingOrders = Cache::rememberForever('pos_waiting_orders', function () {
             return Order::waitingConfirmation()
                 ->with('items.menu')
                 ->latest()

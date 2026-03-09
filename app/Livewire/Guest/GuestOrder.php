@@ -4,6 +4,7 @@ namespace App\Livewire\Guest;
 
 use App\Models\Menu;
 use App\Models\Table;
+use App\Models\Setting;
 use App\Services\MenuService;
 use App\Services\OrderService;
 use Livewire\Attributes\Computed;
@@ -31,8 +32,16 @@ class GuestOrder extends Component
             ->firstOrFail();
     }
 
+    #[Computed]
+    public function isStoreOpen(): bool
+    {
+        return (bool) Setting::get('is_store_open', '1');
+    }
+
     public function addToCart(int $menuId): void
     {
+        if (! $this->isStoreOpen) return;
+
         $menu = Menu::find($menuId);
         if (!$menu || !$menu->is_available) return;
 
@@ -117,6 +126,7 @@ class GuestOrder extends Component
 
     public function openConfirmModal(): void
     {
+        if (! $this->isStoreOpen) return;
         if (empty($this->cart)) return;
         $this->showConfirmModal = true;
     }
@@ -128,6 +138,7 @@ class GuestOrder extends Component
 
     public function submitOrder(): void
     {
+        if (! $this->isStoreOpen) return;
         if (empty($this->cart)) return;
 
         $orderService = app(OrderService::class);

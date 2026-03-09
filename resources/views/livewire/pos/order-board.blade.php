@@ -43,7 +43,21 @@
         setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);
     ">
     {{-- LEFT: Menu Panel --}}
-    <div class="flex-1 flex flex-col h-full overflow-hidden">
+    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+        @if (!$this->isStoreOpen)
+            <div
+                class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                <div
+                    class="bg-red-500/10 border border-red-500/30 p-8 rounded-3xl flex flex-col items-center max-w-md shadow-[0_0_40px_rgba(239,68,68,0.2)]">
+                    <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-red-400 text-3xl">storefront</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Store is Closed</h2>
+                    <p class="text-gray-400 text-sm">You cannot process new orders or accept QR orders at this time.
+                        Please open the store from the sidebar to resume operations.</p>
+                </div>
+            </div>
+        @endif
         {{-- Category Filter --}}
         <div
             class="flex gap-3 p-6 overflow-x-auto no-scrollbar shrink-0 border-b border-white/10 bg-black/5 backdrop-blur-sm">
@@ -78,7 +92,7 @@
         </div>
 
         {{-- Menu Grid --}}
-        <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex-1 overflow-y-auto no-scrollbar p-6">
             @if ($menus->isEmpty())
                 <div class="flex flex-col items-center justify-center h-full text-gray-500">
                     <span class="material-symbols-outlined text-5xl mb-3">search_off</span>

@@ -4,7 +4,6 @@ namespace App\Livewire\Admin;
 
 use App\Models\Menu;
 use App\Models\MenuCategory;
-use App\Models\Setting;
 use App\Services\MenuService;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -18,10 +17,6 @@ class MenuManagement extends Component
     public string $search = '';
 
     public bool $showModal = false;
-
-    public bool $showTaxModal = false;
-
-    public float $taxRate = 8.00;
 
     public ?int $editingId = null;
 
@@ -54,29 +49,6 @@ class MenuManagement extends Component
     {
         $this->resetForm();
         $this->showModal = true;
-    }
-
-    public function openTaxModal(): void
-    {
-        $this->taxRate = (float) Setting::get('tax_rate', 8.00);
-        $this->showTaxModal = true;
-    }
-
-    public function closeTaxModal(): void
-    {
-        $this->showTaxModal = false;
-    }
-
-    public function saveTaxRate(): void
-    {
-        $this->validate([
-            'taxRate' => 'required|numeric|min:0|max:100',
-        ]);
-
-        Setting::set('tax_rate', $this->taxRate);
-
-        session()->flash('success', 'Tax rate updated successfully.');
-        $this->closeTaxModal();
     }
 
     public function openEditModal(int $id): void

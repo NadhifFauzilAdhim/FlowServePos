@@ -83,6 +83,21 @@
             </button>
         </div>
     @else
+        @if (!$this->isStoreOpen)
+            <div
+                class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+                <div
+                    class="bg-red-500/10 border border-red-500/30 p-8 rounded-3xl flex flex-col items-center max-w-sm shadow-[0_0_40px_rgba(239,68,68,0.2)]">
+                    <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-red-500 text-5xl">storefront</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-3">Mohon Maaf, Toko Sedang Tutup</h2>
+                    <p class="text-gray-400 text-sm mb-6">Saat ini kami tidak dapat menerima pesanan baru. Silakan
+                        kembali lagi nanti saat toko kami sudah buka. Terima kasih!</p>
+                </div>
+            </div>
+        @endif
+
         {{-- Category Tabs --}}
         <div
             class="flex gap-2 px-4 sm:px-6 py-3 overflow-x-auto no-scrollbar shrink-0 border-b border-white/10 bg-black/5 backdrop-blur-sm">

@@ -50,5 +50,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/export/excel', [ReportExportController::class, 'excel'])->name('reports.excel');
         Route::get('/users', Register::class)->name('users');
         Route::get('/tables', TableManagement::class)->name('tables');
+        Route::get('/settings', \App\Livewire\Admin\Settings::class)->name('settings');
     });
 });
