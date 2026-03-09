@@ -7,66 +7,91 @@ use App\Models\OrderItem;
 use App\Models\Menu;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class ReportService
 {
     public function getDashboardMetrics(): array
     {
-        $today = today();
+        return Cache::remember('dashboard_metrics', 60, function () {
+            $today = today();
 
-        $todayRevenue = Order::today()->completed()->sum('total');
-        $todayOrders = Order::today()->count();
-        $pendingOrders = Order::today()->pending()->count();
+            // Single aggregate query for today's orders
+            $orderStats = Order::whereDate('created_at', $today)
+                ->select(
+                    DB::raw('COUNT(*) as total_orders'),
+                    DB::raw('SUM(CASE WHEN status = "completed" THEN total ELSE 0 END) as total_revenue'),
+                    DB::raw('SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_orders')
+                )
+                ->first();
 
-        $bestSeller = OrderItem::query()
-            ->whereHas('order', fn($q) => $q->whereDate('created_at', $today)->completed())
-            ->select('menu_id', DB::raw('SUM(quantity) as total_qty'))
-            ->groupBy('menu_id')
-            ->orderByDesc('total_qty')
-            ->with('menu')
-            ->first();
+            $bestSeller = OrderItem::query()
+                ->whereHas('order', fn($q) => $q->whereDate('created_at', $today)->completed())
+                ->select('menu_id', DB::raw('SUM(quantity) as total_qty'))
+                ->groupBy('menu_id')
+                ->orderByDesc('total_qty')
+                ->with('menu')
+                ->first();
 
-        return [
-            'today_revenue' => $todayRevenue,
-            'today_orders' => $todayOrders,
-            'pending_orders' => $pendingOrders,
-            'best_seller' => $bestSeller?->menu?->name ?? '-',
-            'best_seller_qty' => $bestSeller?->total_qty ?? 0,
-        ];
+            return [
+                'today_revenue' => (float) ($orderStats->total_revenue ?? 0),
+                'today_orders' => (int) ($orderStats->total_orders ?? 0),
+                'pending_orders' => (int) ($orderStats->pending_orders ?? 0),
+                'best_seller' => $bestSeller?->menu?->name ?? '-',
+                'best_seller_qty' => $bestSeller?->total_qty ?? 0,
+            ];
+        });
     }
 
     public function getSalesTrend(int $days = 7): array
     {
-        $labels = [];
-        $data = [];
+        return Cache::remember("dashboard_sales_trend_{$days}", 300, function () use ($days) {
+            $labels = [];
+            $data = [];
+            
+            $startDate = now()->subDays($days - 1)->startOfDay();
+            
+            $sales = Order::completed()
+                ->where('created_at', '>=', $startDate)
+                ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total) as total'))
+                ->groupBy('date')
+                ->pluck('total', 'date');
 
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = now()->subDays($i);
-            $labels[] = $date->format('M d');
-            $data[] = (float) Order::whereDate('created_at', $date)->completed()->sum('total');
-        }
+            for ($i = $days - 1; $i >= 0; $i--) {
+                $date = now()->subDays($i);
+                $dateString = $date->format('Y-m-d');
+                $labels[] = $date->format('M d');
+                $data[] = (float) ($sales[$dateString] ?? 0);
+            }
 
-        return ['labels' => $labels, 'data' => $data];
+            return ['labels' => $labels, 'data' => $data];
+        });
     }
 
     public function getPopularItems(int $limit = 5, ?Carbon $from = null, ?Carbon $to = null): array
     {
-        $from = $from ?? now()->subDays(30);
-        $to = $to ?? now();
+        $cacheKey = "dashboard_popular_items_{$limit}_" . ($from ? $from->format('Ymd') : 'none') . "_" . ($to ? $to->format('Ymd') : 'none');
+        
+        return Cache::remember($cacheKey, 300, function () use ($limit, $from, $to) {
+            $from = $from ?? now()->subDays(30);
+            $to = $to ?? now();
 
-        $items = OrderItem::query()
-            ->whereHas('order', fn($q) => $q->whereBetween('created_at', [$from, $to])->completed())
-            ->select('menu_id', DB::raw('SUM(quantity) as total_qty'))
-            ->groupBy('menu_id')
-            ->orderByDesc('total_qty')
-            ->limit($limit)
-            ->with('menu')
-            ->get();
+            $items = OrderItem::query()
+                ->whereHas('order', function ($q) use ($from, $to) {
+                    $q->whereBetween('created_at', [$from, $to])->completed();
+                })
+                ->select('menu_id', DB::raw('SUM(quantity) as total_qty'))
+                ->groupBy('menu_id')
+                ->orderByDesc('total_qty')
+                ->limit($limit)
+                ->with('menu')
+                ->get();
 
-        return [
-            'labels' => $items->pluck('menu.name')->toArray(),
-            'data' => $items->pluck('total_qty')->toArray(),
-        ];
+            return [
+                'labels' => $items->pluck('menu.name')->toArray(),
+                'data' => $items->pluck('total_qty')->toArray(),
+            ];
+        });
     }
 
     public function getSalesReport(string $period = 'daily', ?Carbon $from = null, ?Carbon $to = null): array

@@ -4,10 +4,16 @@
             <h1 class="text-white text-2xl font-bold drop-shadow-md">Menu Management</h1>
             <p class="text-gray-400 text-sm mt-1">Manage your café menu items</p>
         </div>
-        <button wire:click="openCreateModal"
-            class="px-5 py-2.5 rounded-xl bg-primary border border-primary/50 text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-[inset_0_0_12px_rgba(255,255,255,0.3),0_0_15px_rgba(212,115,17,0.4)] flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">add</span> Add Menu
-        </button>
+        <div class="flex items-center gap-3">
+            <button wire:click="openTaxModal"
+                class="px-5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-sm font-bold hover:bg-white/5 transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">percent</span> Tax Settings
+            </button>
+            <button wire:click="openCreateModal"
+                class="px-5 py-2.5 rounded-xl bg-primary border border-primary/50 text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-[inset_0_0_12px_rgba(255,255,255,0.3),0_0_15px_rgba(212,115,17,0.4)] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">add</span> Add Menu
+            </button>
+        </div>
     </div>
 
     @if (session()->has('success'))
@@ -176,6 +182,45 @@
                         <span wire:loading.remove wire:target="save">{{ $editingId ? 'Update' : 'Create' }} Menu
                             Item</span>
                         <span wire:loading wire:target="save">Saving...</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Tax Settings Modal --}}
+    @if ($showTaxModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            wire:click.self="closeTaxModal">
+            <div class="bg-[#1a1625] border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-white text-xl font-bold">Tax Rate Settings</h3>
+                    <button wire:click="closeTaxModal" class="text-gray-400 hover:text-white transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <form wire:submit="saveTaxRate" class="flex flex-col gap-4">
+                    <div>
+                        <label class="text-gray-300 text-sm font-medium mb-1.5 block">Store Tax Rate (%)</label>
+                        <div class="relative">
+                            <input wire:model="taxRate" type="number" step="0.01" min="0" max="100"
+                                class="w-full rounded-lg border border-white/10 bg-black/40 text-white h-10 px-3 pl-8 text-sm focus:border-primary/50 focus:outline-none focus:ring-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]" />
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-400 text-sm">%</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-xs mt-1.5">This percentage will be automatically applied to all
+                            new orders.</p>
+                        @error('taxRate')
+                            <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <button type="submit"
+                        class="w-full h-11 rounded-xl bg-primary border border-primary/50 text-white font-bold hover:bg-primary/90 transition-all shadow-[inset_0_0_12px_rgba(255,255,255,0.3),0_0_15px_rgba(212,115,17,0.4)] mt-2">
+                        <span wire:loading.remove wire:target="saveTaxRate">Save Settings</span>
+                        <span wire:loading wire:target="saveTaxRate">Saving...</span>
                     </button>
                 </form>
             </div>

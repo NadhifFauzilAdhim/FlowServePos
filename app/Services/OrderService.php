@@ -4,21 +4,22 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    const TAX_RATE = 8.00;
-
     public function calculateTotals(array $cartItems, float $discount = 0): array
     {
+        $taxRate = (float) Setting::get('tax_rate', 8.00);
         $subtotal = collect($cartItems)->sum(fn ($item) => $item['price'] * $item['quantity']);
-        $taxAmount = round($subtotal * (self::TAX_RATE / 100), 2);
+        $taxAmount = round($subtotal * ($taxRate / 100), 2);
         $total = $subtotal + $taxAmount - $discount;
 
         return [
             'subtotal' => $subtotal,
-            'tax_rate' => self::TAX_RATE,
+            'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
             'discount_amount' => $discount,
             'total' => max(0, $total),
@@ -101,6 +102,8 @@ class OrderService
                     'notes' => $item['notes'] ?? null,
                 ]);
             }
+
+            Cache::forget('pos_waiting_orders');
 
             return $order->load('items.menu');
         });

@@ -3,10 +3,10 @@
 namespace App\Livewire\Pos;
 
 use App\Models\Menu;
-use App\Models\MenuCategory;
 use App\Models\Order;
 use App\Services\MenuService;
 use App\Services\OrderService;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -114,7 +114,8 @@ class OrderBoard extends Component
     #[Computed]
     public function taxAmount(): float
     {
-        return round($this->subtotal * (OrderService::TAX_RATE / 100), 2);
+        $taxRate = (float) \App\Models\Setting::get('tax_rate', 8.00);
+        return round($this->subtotal * ($taxRate / 100), 2);
     }
 
     #[Computed]
@@ -129,6 +130,7 @@ class OrderBoard extends Component
         if ($this->payingQrOrderId && $this->payingQrOrderData) {
             return max(0, $this->amountReceived - $this->payingQrOrderData['total']);
         }
+
         return max(0, $this->amountReceived - $this->total);
     }
 
@@ -152,6 +154,7 @@ class OrderBoard extends Component
     {
         if ($this->payingQrOrderId) {
             $this->processQrOrderPayment();
+
             return;
         }
 
@@ -226,7 +229,7 @@ class OrderBoard extends Component
 
         $this->lastOrder = [
             'order_number' => $order->order_number,
-            'order_type' => ucfirst(str_replace('_', ' ', $order->order_type)) . ($order->table_number ? " (Meja #{$order->table_number})" : ''),
+            'order_type' => ucfirst(str_replace('_', ' ', $order->order_type)).($order->table_number ? " (Meja #{$order->table_number})" : ''),
             'cashier' => auth()->user()->name,
             'date' => $order->created_at->format('d/m/Y H:i'),
             'items' => $order->items->map(fn ($item) => [
@@ -251,7 +254,8 @@ class OrderBoard extends Component
         $this->showPaymentModal = false;
         $this->showReceiptModal = true;
 
-        session()->flash('success', "Pesanan {$order->order_number} " . ($order->table_number ? "(Meja #{$order->table_number}) " : "") . "dikonfirmasi.");
+        session()->flash('success', "Pesanan {$order->order_number} ".($order->table_number ? "(Meja #{$order->table_number}) " : '').'dikonfirmasi.');
+        Cache::forget('pos_waiting_orders');
         $this->dispatch('order-completed');
     }
 
@@ -294,8 +298,9 @@ class OrderBoard extends Component
 
         $order = Order::waitingConfirmation()->findOrFail($this->rejectingQrOrderId);
         $order->update(['status' => 'cancelled']);
-        
+
         session()->flash('success', "Pesanan {$this->rejectingQrOrderNumber} ditolak.");
+        Cache::forget('pos_waiting_orders');
         $this->closeRejectModal();
     }
 
@@ -323,21 +328,10 @@ class OrderBoard extends Component
     public function render()
     {
         $menuService = app(MenuService::class);
-        $waitingOrders = Order::waitingConfirmation()
-            ->with('items.menu')
-            ->latest()
-            ->get();
-
-        $currentCount = $waitingOrders->count();
-        if ($this->previousWaitingCount !== null && $currentCount > $this->previousWaitingCount) {
-            $this->dispatch('new-qr-order');
-        }
-        $this->previousWaitingCount = $currentCount;
 
         return view('livewire.pos.order-board', [
             'menus' => $menuService->getMenusByCategory($this->selectedCategory, $this->searchQuery ?: null),
             'categories' => $menuService->getCategories(),
-            'waitingOrders' => $waitingOrders,
         ]);
     }
 }

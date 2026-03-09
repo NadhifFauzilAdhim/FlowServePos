@@ -94,7 +94,8 @@ class GuestOrder extends Component
     #[Computed]
     public function taxAmount(): float
     {
-        return round($this->subtotal * (OrderService::TAX_RATE / 100), 2);
+        $taxRate = (float) \App\Models\Setting::get('tax_rate', 8.00);
+        return round($this->subtotal * ($taxRate / 100), 2);
     }
 
     #[Computed]
