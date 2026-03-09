@@ -181,7 +181,7 @@
             
                         ctx.font = 'bold 20px Arial';
                         ctx.fillStyle = '#333333';
-                        ctx.fillText('☕ Lumina Café', 200, 400);
+                        ctx.fillText('☕ FlowServe', 200, 400);
             
                         const link = document.createElement('a');
                         link.download = 'qr-meja-{{ $viewingTable->number }}.png';
@@ -194,24 +194,26 @@
             
                         const printWin = window.open('', '_blank', 'width=450,height=600');
                         printWin.document.write(`<!DOCTYPE html><html><head><title>QR Meja {{ $viewingTable->number }}</title>
-                                    <style>
-                                        body { margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:Arial,sans-serif; }
-                                        .card { text-align:center; padding:40px; border:3px dashed #ccc; border-radius:16px; }
-                                        .card img { margin:0 auto 20px; }
-                                        .table-num { font-size:36px; font-weight:bold; margin-bottom:8px; }
-                                        .subtitle { color:#666; font-size:14px; margin-bottom:24px; }
-                                        .brand { font-size:18px; font-weight:bold; color:#333; }
-                                    </style>
-                                </head><body><div class='card'>
-                                    <img src='${canvas.toDataURL('image/png')}' width='200' height='200' />
-                                    <div class='table-num'>Meja #{{ $viewingTable->number }}</div>
-                                    <div class='subtitle'>Scan untuk memesan</div>
-                                    <div class='brand'>☕ Lumina Café</div>
-                                </div></body></html>`);
+                                                <style>
+                                                    body { margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; font-family:Arial,sans-serif; }
+                                                    .card { text-align:center; padding:40px; border:3px dashed #ccc; border-radius:16px; }
+                                                    .card img { margin:0 auto 20px; }
+                                                    .table-num { font-size:36px; font-weight:bold; margin-bottom:8px; }
+                                                    .subtitle { color:#666; font-size:14px; margin-bottom:24px; }
+                                                    .brand { font-size:18px; font-weight:bold; color:#333; }
+                                                </style>
+                                            </head><body><div class='card'>
+                                                <img src='${canvas.toDataURL('image/png')}' width='200' height='200' />
+                                                <div class='table-num'>Meja #{{ $viewingTable->number }}</div>
+                                                <div class='subtitle'>Scan untuk memesan</div>
+                                                <div class='brand'>☕ FlowServe</div>
+                                            </div></body></html>`);
                         printWin.document.close();
                         printWin.focus();
-                        setTimeout(() => { printWin.print();
-                            printWin.close(); }, 300);
+                        setTimeout(() => {
+                            printWin.print();
+                            printWin.close();
+                        }, 300);
                     }
             }" x-init="$nextTick(() => generateQR())">
             <div class="bg-[#1a1625] border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl">

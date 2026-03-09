@@ -1,145 +1,160 @@
-# POS Cafe System
 
-POS Cafe System is a modern web-based Point of Sale (POS) application built using Laravel and Livewire. This system is designed to help cafés, restaurants, or small food businesses manage orders, menus, kitchen workflows, and sales reports efficiently.
+# FlowServe: Modern POS System
 
-The application focuses on speed, simplicity, and a clean dashboard interface that supports daily cashier and kitchen operations.
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![Livewire](https://img.shields.io/badge/Livewire-FB70A9?style=for-the-badge&logo=livewire&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC34A?style=for-the-badge&logo=alpine.js&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-## Features
+**FlowServe** is a modern **web-based Point of Sale (POS) system** designed specifically for cafés and restaurants. Built with the **TALL Stack (Tailwind, Alpine.js, Laravel, Livewire)**, FlowServe provides high operational speed with an intuitive interface for cashiers, kitchen staff, and business owners.
 
-- Order Management  
-  Cashiers can create orders quickly through an interactive POS interface. The system automatically calculates subtotal, tax, discount, total payment, and change.
+---
 
-- Menu Management  
-  Administrators can add, update, delete, and organize menu items. Each menu includes details such as name, category, price, description, and image.
+## Key Features
 
-- Kitchen Display System (KDS)  
-  Kitchen staff can monitor incoming orders in real time. Orders appear automatically after being confirmed by the cashier, allowing kitchen staff to manage preparation efficiently.
+### 🛒 1. Smart POS Interface
+Process transactions quickly with an interactive interface. Automatic calculation of subtotal, tax, discounts, and change in a single responsive screen.
 
-- Real-time Order Status  
-  Kitchen staff can update the order status such as Pending, Preparing, and Ready, and the cashier interface will reflect the status changes.
+### 🍳 2. Kitchen Display System (KDS)
+Say goodbye to paper order tickets. The Kitchen Display System allows kitchen staff to monitor orders in **real time**. Once the cashier confirms payment, the order instantly appears on the kitchen screen with a time indicator.
 
-- Sales Report  
-  The system provides reports such as daily sales, weekly sales, monthly sales, and best-selling menu items to help analyze business performance.
+**Order Status Tracking:**
+Pending ➡️ Preparing ➡️ Ready
 
-- Dashboard Analytics  
-  The dashboard displays key business metrics including total orders, daily revenue, and popular menu items.
+### 📱 3. QR Table Generator
+Improve efficiency with a self-ordering system. Admins can generate **unique QR codes for each table**, allowing customers to scan and instantly access the digital menu.
 
-- Inventory Tracking (optional module)  
-  Track stock usage and manage inventory levels for menu ingredients.
+### 📦 4. Inventory Management
+Manage raw material stock precisely. The system tracks inventory usage based on sold menu items and provides automatic alerts when stock is running low.
 
-- Responsive Dashboard Interface  
-  Designed with a modern dashboard layout optimized for cashier and operational workflows.
+### 📊 5. Revenue Reporting
+Analyze your business performance with accurate data:
 
-## Technology Stack
+- Revenue Reports: Daily, weekly, and monthly sales reports
+- Best Seller Analysis: Identify the most popular menu items
+- Dashboard Analytics: Sales trend visualizations for better decision-making
 
-- Backend: Laravel  
-- Frontend: Laravel Livewire  
-- Styling: TailwindCSS  
-- Database: MySQL  
-- Real-time updates: Livewire polling or broadcasting
+---
 
-## System Modules
+## 🛠️ Tech Stack
 
-- Authentication and Role Management
-- POS Order Interface
-- Menu Management
-- Kitchen Display System
-- Order Tracking
-- Sales Reporting
-- Dashboard Analytics
+| Layer | Technology |
+|------|------------|
+| Backend | Laravel 12.x |
+| Frontend |  Livewire 4
+| Styling | TailwindCSS 4|
+| Database | MySQL / PostgreSQL |
+| Cache | Redis (Recommended) |
 
-## Project Structure
+---
 
-The application follows a modular Laravel structure to maintain clean architecture and scalable code.
+## 📂 Project Structure
 
-```
+FlowServe uses a **Service Layer Architecture** to separate business logic from the UI, keeping the codebase clean, modular, and easily testable.
+
+```text
 app/
- ├── Livewire
- │   ├── POS
- │   ├── Menu
- │   ├── Kitchen
- │   ├── Orders
- │   └── Dashboard
- │
- ├── Services
- │   ├── OrderService
- │   ├── MenuService
- │   └── ReportService
- │
- ├── Models
- └── Http
-     └── Requests
+ ├── Livewire/          # Interactive UI Components (POS, KDS, Reports)
+ ├── Services/          # Business Logic (OrderService, InventoryService, ReportService)
+ ├── Models/            # Database Models & Relationships
+ └── Http/              # Controllers & Form Requests
+```
+---
+
+## ⚙️ Quick Installation
+
+Follow these steps to run **FlowServe** locally.
+
+### 1. Requirements
+
+Make sure the following tools are installed:
+
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- MySQL or PostgreSQL
+
+---
+
+### 2. Clone the Repository
+
+```bash
+git clone https://github.com/NadhifFauzilAdhim/FlowServePos.git  
+cd FlowServePos
 ```
 
-Business logic is placed inside service classes while Livewire components handle UI interaction.
+---
 
-## Installation
+### 3. Install Dependencies
 
-Clone the repository
-
-```
-git clone https://github.com/yourusername/pos-cafe-system.git
-```
-
-Go to the project directory
-
-```
-cd pos-cafe-system
+```bash
+composer install  
+npm install
 ```
 
-Install dependencies
+---
 
-```
-composer install
-```
+### 4. Configure Environment
 
-Copy environment file
-
-```
+```bash
 cp .env.example .env
 ```
 
-Generate application key
+Then configure your database credentials:
 
-```
+DB_DATABASE=  
+DB_USERNAME=  
+DB_PASSWORD=
+
+---
+
+### 5. Generate Application Key
+
+```bash
 php artisan key:generate
 ```
 
-Configure your database in `.env` file.
+---
 
-Run migrations
+### 6. Run Database Migrations
 
-```
+```bash
 php artisan migrate
 ```
 
-Start the development server
+---
 
-```
+### 7. Start the Development Server
+
+```bash
 php artisan serve
+
+npm run dev
 ```
 
-## Usage
+---
 
-1. Login to the system.
-2. Add menu items from the Menu Management page.
-3. Use the POS interface to create customer orders.
-4. Confirm orders so they appear in the Kitchen Display System.
-5. Kitchen staff can update order status during preparation.
-6. View sales performance from the reporting dashboard.
+### 8. Access the Application
 
-## Future Improvements
+Demo account:  
+Email: admin@lumina.cafe  
+Password: Password
 
-- QR ordering system
-- Multi-outlet support
-- Offline mode for POS
-- Customer loyalty system
-- Receipt printing integration
+---
 
-## License
 
-This project is open-source and available under the MIT License.
+## 🤝 Contribution
 
-## Author
+You are welcome to **fork, modify, and build upon this project** for personal or commercial use.
 
-Developed by Nadhif Fauzil
+However, as a form of support for the original work, please **keep the original credit to the FlowServe project and the author** somewhere in your project.
+
+This small acknowledgment helps support the development of open-source tools and encourages further improvements to the project.
+
+Thank you for supporting the project.
+
+
+## 📄 License
+
+This project is licensed under the **MIT License**.

@@ -16,7 +16,7 @@
                     :class="open ? 'rotate-180' : ''">expand_more</span>
             </button>
 
-            <div x-show="open" x-collapse class="max-h-[280px] overflow-y-auto">
+            <div x-show="open" x-collapse class="max-h-[280px] overflow-y-auto no-scrollbar">
                 @foreach ($waitingOrders as $wo)
                     <div wire:key="waiting-{{ $wo->id }}"
                         class="px-4 py-3 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors">

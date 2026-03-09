@@ -33,7 +33,7 @@
                     <label class="text-gray-300 text-sm font-medium mb-1.5 block">Email</label>
                     <input wire:model="email" type="email"
                         class="w-full rounded-lg border border-white/10 bg-black/40 text-white h-10 px-3 text-sm placeholder:text-gray-500 focus:border-primary/50 focus:outline-none focus:ring-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
-                        placeholder="user@lumina.cafe" />
+                        placeholder="user@flowserve.com" />
                     @error('email')
                         <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span>
                     @enderror

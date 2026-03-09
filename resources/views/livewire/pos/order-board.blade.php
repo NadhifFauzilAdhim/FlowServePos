@@ -170,7 +170,7 @@
         </div>
 
         {{-- Cart Items --}}
-        <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
+        <div class="flex-1 overflow-y-auto no-scrollbar p-5 flex flex-col gap-4">
             @forelse ($cart as $index => $item)
                 <div wire:key="cart-{{ $index }}" class="flex gap-4 pb-4 border-b border-white/10">
                     <div
@@ -356,12 +356,13 @@
                 </div>
 
                 {{-- Receipt Content (printable) --}}
-                <div class="overflow-y-auto flex-1 p-5 print:p-0 print:overflow-visible" id="receipt-content">
+                <div class="overflow-y-auto no-scrollbar flex-1 p-5 print:p-0 print:overflow-visible"
+                    id="receipt-content">
                     <div
                         class="bg-white text-gray-900 rounded-xl p-6 font-mono text-sm print:rounded-none print:p-4 print:shadow-none">
                         {{-- Store Header --}}
                         <div class="text-center mb-4 pb-3 border-b-2 border-dashed border-gray-300">
-                            <h2 class="text-xl font-bold tracking-tight">☕ Lumina Café</h2>
+                            <h2 class="text-xl font-bold tracking-tight">☕ FlowServe</h2>
                             <p class="text-xs text-gray-500 mt-1">Jl. Contoh Alamat No. 123</p>
                             <p class="text-xs text-gray-500">Tel: (021) 1234-5678</p>
                         </div>

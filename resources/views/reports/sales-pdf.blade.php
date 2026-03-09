@@ -99,7 +99,7 @@
 </head>
 
 <body>
-    <h1>☕ Lumina Café</h1>
+    <h1>☕ FlowServe</h1>
     <p class="subtitle">Sales Report — {{ ucfirst($period) }} | {{ $from->format('d M Y') }} to
         {{ $to->format('d M Y') }}</p>
 
@@ -170,7 +170,7 @@
     @endif
 
     <div class="footer">
-        Generated on {{ now()->format('d M Y H:i') }} — Lumina Café POS System
+        Generated on {{ now()->format('d M Y H:i') }} — FlowServe POS System
     </div>
 </body>
 

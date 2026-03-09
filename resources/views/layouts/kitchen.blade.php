@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Kitchen Display — Lumina Café</title>
+    <title>Kitchen Display — FlowServe</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
@@ -13,6 +13,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
 </head>
 
 <body
@@ -30,13 +31,13 @@
         <header
             class="flex items-center justify-between px-6 py-3 border-b border-white/10 bg-black/20 backdrop-blur-md shrink-0 relative z-10">
             <div class="flex items-center gap-3">
-                <div class="p-2 rounded-lg bg-primary/20 border border-primary/30">
-                    <span
-                        class="material-symbols-outlined text-primary text-2xl drop-shadow-[0_0_8px_rgba(212,115,17,0.5)]">soup_kitchen</span>
+                <div class="h-8 w-8 overflow-hidden rounded-lg">
+                    <img src="{{ asset('img/logo/flow-serve.png') }}" alt="FlowServe Logo"
+                        class="w-full h-full object-cover">
                 </div>
                 <div>
                     <h1 class="text-white text-xl font-bold leading-tight">Kitchen Display</h1>
-                    <p class="text-gray-500 text-xs">Lumina Café</p>
+                    <p class="text-gray-500 text-xs">FlowServe</p>
                 </div>
             </div>
             <div class="flex items-center gap-6">

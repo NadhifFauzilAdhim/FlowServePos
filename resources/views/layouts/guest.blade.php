@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>{{ $title ?? 'Order — Lumina Café' }}</title>
+    <title>{{ $title ?? 'Order — FlowServe' }}</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
@@ -12,6 +12,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
 </head>
 
 <body
@@ -29,13 +30,11 @@
         <header
             class="flex items-center justify-between border-b border-white/10 px-5 py-4 shrink-0 bg-black/10 backdrop-blur-md relative z-10">
             <div class="flex items-center gap-3">
-                <div
-                    class="p-2 rounded-lg bg-primary/20 border border-primary/30 shadow-[inset_0_0_10px_rgba(212,115,17,0.3)]">
-                    <span
-                        class="material-symbols-outlined text-primary text-xl drop-shadow-[0_0_8px_rgba(212,115,17,0.5)]">local_cafe</span>
+                <div class="h-8 w-8 overflow-hidden rounded-lg">
+                    <img src="{{ asset('img/logo/flow-serve.png') }}" alt="FlowServe Logo"
+                        class="w-full h-full object-cover">
                 </div>
-                <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] drop-shadow-md">Lumina
-                    Café</h2>
+                <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] drop-shadow-md">FlowServe</h2>
             </div>
             @if (isset($tableNumber))
                 <div

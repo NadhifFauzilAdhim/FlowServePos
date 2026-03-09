@@ -18,7 +18,7 @@
                 </div>
                 <input wire:model="email" type="email"
                     class="form-input flex w-full min-w-0 flex-1 resize-none rounded-lg text-white focus:outline-none focus:ring-0 border-none bg-transparent h-11 placeholder:text-gray-500 px-3 text-sm"
-                    placeholder="admin@lumina.cafe" />
+                    placeholder="admin@flowserve.com" />
             </div>
             @error('email')
                 <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span>

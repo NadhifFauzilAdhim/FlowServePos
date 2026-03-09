@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>{{ $title ?? 'Lumina Café — Login' }}</title>
+    <title>{{ $title ?? 'FlowServe — Login' }}</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
@@ -12,6 +12,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
 </head>
 
 <body
@@ -26,12 +27,11 @@
     <div class="relative z-10 w-full max-w-md px-6">
         {{-- Logo --}}
         <div class="flex items-center justify-center gap-3 mb-8">
-            <div
-                class="p-3 rounded-xl bg-primary/20 border border-primary/30 shadow-[inset_0_0_10px_rgba(212,115,17,0.3)]">
-                <span
-                    class="material-symbols-outlined text-primary text-3xl drop-shadow-[0_0_8px_rgba(212,115,17,0.5)]">local_cafe</span>
+            <div class="h-10 w-10 overflow-hidden rounded-xl">
+                <img src="{{ asset('img/logo/flow-serve.png') }}" alt="FlowServe Logo"
+                    class="w-full h-full object-cover">
             </div>
-            <h1 class="text-white text-2xl font-bold tracking-[-0.015em] drop-shadow-md">Lumina Café</h1>
+            <h1 class="text-white text-2xl font-bold tracking-[-0.015em] drop-shadow-md">FlowServe</h1>
         </div>
 
         {{-- Card --}}
