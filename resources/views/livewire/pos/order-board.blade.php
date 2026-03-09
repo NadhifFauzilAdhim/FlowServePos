@@ -131,69 +131,70 @@
         class="w-[360px] flex flex-col h-full bg-black/20 backdrop-blur-2xl border-l border-white/10 shrink-0 shadow-[-8px_0_32px_-16px_rgba(0,0,0,0.8)] z-20">
 
         {{-- QR Orders Waiting Confirmation --}}
-        @if ($waitingOrders->count() > 0)
-            <div x-data="{ open: true }" class="border-b border-white/10 shrink-0">
-                <button @click="open = !open"
-                    class="w-full flex items-center justify-between px-5 py-3 bg-amber-500/10 hover:bg-amber-500/15 transition-colors">
-                    <div class="flex items-center gap-2">
-                        <span
-                            class="material-symbols-outlined text-amber-400 text-lg animate-pulse">notifications_active</span>
-                        <span class="text-amber-400 text-sm font-bold">Pesanan QR Masuk</span>
-                        <span
-                            class="bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold px-2 py-0.5 rounded-full">
-                            {{ $waitingOrders->count() }}
-                        </span>
-                    </div>
-                    <span class="material-symbols-outlined text-amber-400 text-lg transition-transform"
-                        :class="open ? 'rotate-180' : ''">expand_more</span>
-                </button>
-
-                <div x-show="open" x-collapse class="max-h-[280px] overflow-y-auto">
-                    @foreach ($waitingOrders as $wo)
-                        <div wire:key="waiting-{{ $wo->id }}"
-                            class="px-4 py-3 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center gap-2">
-                                    <span
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold">
-                                        <span class="material-symbols-outlined text-[12px]">table_restaurant</span>
-                                        Meja #{{ $wo->table_number }}
-                                    </span>
-                                    <span class="text-white text-xs font-semibold">{{ $wo->order_number }}</span>
-                                </div>
-                                <span
-                                    class="text-gray-500 text-[10px]">{{ $wo->created_at->diffForHumans(null, true, true) }}</span>
-                            </div>
-
-                            <div class="mb-2">
-                                @foreach ($wo->items as $item)
-                                    <div class="flex items-center gap-1.5 text-gray-300 text-xs">
-                                        <span class="text-primary font-bold">{{ $item->quantity }}x</span>
-                                        <span>{{ $item->menu->name }}</span>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <div class="flex items-center justify-between">
-                                <span class="text-white text-sm font-bold">Rp
-                                    {{ number_format($wo->total, 0, ',', '.') }}</span>
-                                <div class="flex gap-1.5">
-                                    <button wire:click="rejectQrOrder({{ $wo->id }})"
-                                        wire:confirm="Tolak pesanan {{ $wo->order_number }}?"
-                                        class="px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-all">
-                                        Tolak
-                                    </button>
-                                    <button wire:click="confirmQrOrder({{ $wo->id }})"
-                                        class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/30 transition-all flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[14px]">check</span> Konfirmasi
-                                    </button>
-                                </div>
-                            </div>
+        <div wire:poll.5s class="shrink-0 w-full">
+            @if ($waitingOrders->count() > 0)
+                <div x-data="{ open: true }" class="border-b border-white/10">
+                    <button @click="open = !open"
+                        class="w-full flex items-center justify-between px-5 py-3 bg-amber-500/10 hover:bg-amber-500/15 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="material-symbols-outlined text-amber-400 text-lg animate-pulse">notifications_active</span>
+                            <span class="text-amber-400 text-sm font-bold">Pesanan QR Masuk</span>
+                            <span
+                                class="bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                                {{ $waitingOrders->count() }}
+                            </span>
                         </div>
-                    @endforeach
+                        <span class="material-symbols-outlined text-amber-400 text-lg transition-transform"
+                            :class="open ? 'rotate-180' : ''">expand_more</span>
+                    </button>
+
+                    <div x-show="open" x-collapse class="max-h-[280px] overflow-y-auto">
+                        @foreach ($waitingOrders as $wo)
+                            <div wire:key="waiting-{{ $wo->id }}"
+                                class="px-4 py-3 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-bold">
+                                            <span class="material-symbols-outlined text-[12px]">table_restaurant</span>
+                                            Meja #{{ $wo->table_number }}
+                                        </span>
+                                        <span class="text-white text-xs font-semibold">{{ $wo->order_number }}</span>
+                                    </div>
+                                    <span
+                                        class="text-gray-500 text-[10px]">{{ $wo->created_at->diffForHumans(null, true, true) }}</span>
+                                </div>
+
+                                <div class="mb-2">
+                                    @foreach ($wo->items as $item)
+                                        <div class="flex items-center gap-1.5 text-gray-300 text-xs">
+                                            <span class="text-primary font-bold">{{ $item->quantity }}x</span>
+                                            <span>{{ $item->menu->name }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <span class="text-white text-sm font-bold">Rp
+                                        {{ number_format($wo->total, 0, ',', '.') }}</span>
+                                    <div class="flex gap-1.5">
+                                        <button wire:click="openRejectModal({{ $wo->id }})"
+                                            class="px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-all">
+                                            Tolak
+                                        </button>
+                                        <button wire:click="confirmQrOrder({{ $wo->id }})"
+                                            class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/30 transition-all flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[14px]">check</span> Konfirmasi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
-            </div>
-        @endif
+            @endif
+        </div>
 
         {{-- Cart Header --}}
         <div class="p-5 border-b border-white/10 shrink-0 bg-black/10">
@@ -332,12 +333,17 @@
                 </div>
 
                 <div class="mb-6 p-4 rounded-xl bg-black/30 border border-white/10">
+                    @php $currentTotal = $payingQrOrderId ? $payingQrOrderData['total'] : $this->total; @endphp
                     <div class="flex justify-between text-lg font-bold mb-2">
                         <span class="text-gray-300">Total</span>
-                        <span class="text-primary">Rp {{ number_format($this->total, 0, ',', '.') }}</span>
+                        <span class="text-primary">Rp {{ number_format($currentTotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="text-gray-400 text-sm">
-                        {{ count($cart) }} item(s) • {{ ucfirst(str_replace('_', ' ', $orderType)) }}
+                        {{ $payingQrOrderId ? $payingQrOrderData['item_count'] : count($cart) }} item(s) •
+                        {{ ucfirst(str_replace('_', ' ', $payingQrOrderId ? $payingQrOrderData['order_type'] : $orderType)) }}
+                        @if ($payingQrOrderId && $payingQrOrderData['table_number'])
+                            • Meja {{ $payingQrOrderData['table_number'] }}
+                        @endif
                     </div>
                 </div>
 
@@ -352,7 +358,7 @@
 
                     {{-- Quick amount buttons --}}
                     <div class="grid grid-cols-3 gap-2 mt-3">
-                        @foreach ([ceil($this->total / 1000) * 1000, ceil($this->total / 5000) * 5000, ceil($this->total / 10000) * 10000, 50000, 100000, 200000] as $amount)
+                        @foreach ([ceil($currentTotal / 1000) * 1000, ceil($currentTotal / 5000) * 5000, ceil($currentTotal / 10000) * 10000, 50000, 100000, 200000] as $amount)
                             <button wire:click="$set('amountReceived', {{ $amount }})"
                                 class="py-2 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/10 transition-all">
                                 {{ number_format($amount, 0, ',', '.') }}
@@ -361,7 +367,7 @@
                     </div>
                 </div>
 
-                @if ($amountReceived >= $this->total)
+                @if ($amountReceived >= $currentTotal)
                     <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                         <div class="flex justify-between text-lg font-bold">
                             <span class="text-emerald-400">Change</span>
@@ -371,7 +377,7 @@
                     </div>
                 @endif
 
-                <button wire:click="processPayment" @if ($amountReceived < $this->total) disabled @endif
+                <button wire:click="processPayment" @if ($amountReceived < $currentTotal) disabled @endif
                     class="w-full h-14 rounded-xl bg-emerald-600 border border-emerald-500/50 text-white text-lg font-bold hover:bg-emerald-500 transition-all shadow-[inset_0_0_16px_rgba(255,255,255,0.2),0_0_24px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <span class="material-symbols-outlined">check_circle</span>
                     <span wire:loading.remove wire:target="processPayment">Complete Payment</span>
@@ -491,4 +497,69 @@
             </div>
         </div>
     @endif
+
+    {{-- Reject Modal --}}
+    @if ($showRejectModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            wire:click.self="closeRejectModal">
+            <div
+                class="bg-[#1a1625] border border-red-500/30 rounded-2xl p-8 w-full max-w-sm shadow-[0_0_40px_rgba(239,68,68,0.15)] animate-fade-in relative overflow-hidden">
+                {{-- Ambient glow --}}
+                <div
+                    class="absolute top-[-50px] right-[-50px] w-32 h-32 bg-red-500/20 rounded-full blur-[40px] pointer-events-none">
+                </div>
+
+                <div class="flex flex-col items-center text-center relative z-10">
+                    <div
+                        class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5 shadow-[inset_0_0_15px_rgba(239,68,68,0.2)]">
+                        <span class="material-symbols-outlined text-red-400 text-3xl">warning</span>
+                    </div>
+                    <h3 class="text-white text-xl font-bold mb-2">Reject Order</h3>
+                    <p class="text-gray-400 text-sm mb-8 leading-relaxed">
+                        Are you sure you want to reject order <span
+                            class="text-white font-bold">{{ $rejectingQrOrderNumber }}</span>
+                        @if ($rejectingQrOrderTable)
+                            (Table #{{ $rejectingQrOrderTable }})
+                        @endif?
+                        This action cannot be undone.
+                    </p>
+                </div>
+
+                <div class="flex gap-3 relative z-10">
+                    <button wire:click="closeRejectModal"
+                        class="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-bold hover:bg-white/10 transition-all">
+                        Cancel
+                    </button>
+                    <button wire:click="rejectQrOrder"
+                        class="flex-1 py-3 rounded-xl bg-red-600 border border-red-500/50 text-white text-sm font-bold hover:bg-red-500 transition-all shadow-[inset_0_0_12px_rgba(255,255,255,0.2),0_0_15px_rgba(239,68,68,0.4)] flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                        Yes, Reject
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
+
+@script
+    <script>
+        // Audio notification for new QR orders
+        $wire.on('new-qr-order', () => {
+            try {
+                const ctx = new(window.AudioContext || window.webkitAudioContext)();
+                // Play two-tone chime
+                [440, 660].forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.2);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.2);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.2 + 0.4);
+                    osc.start(ctx.currentTime + i * 0.2);
+                    osc.stop(ctx.currentTime + i * 0.2 + 0.4);
+                });
+            } catch (e) {}
+        });
+    </script>
+@endscript

@@ -12,7 +12,7 @@ class InventoryService
     public function getAllItems(?string $search = null): Collection
     {
         return InventoryItem::query()
-            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
             ->get();
     }
@@ -30,6 +30,7 @@ class InventoryService
     public function updateItem(InventoryItem $item, array $data): InventoryItem
     {
         $item->update($data);
+
         return $item->fresh();
     }
 

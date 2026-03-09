@@ -30,7 +30,21 @@ class OrderBoard extends Component
 
     public bool $showReceiptModal = false;
 
+    public bool $showRejectModal = false;
+
+    public ?int $rejectingQrOrderId = null;
+
+    public ?string $rejectingQrOrderNumber = null;
+
+    public ?string $rejectingQrOrderTable = null;
+
+    public ?int $payingQrOrderId = null;
+
+    public ?array $payingQrOrderData = null;
+
     public ?array $lastOrder = null;
+
+    public ?int $previousWaitingCount = null;
 
     public function addToCart(int $menuId): void
     {
@@ -112,6 +126,9 @@ class OrderBoard extends Component
     #[Computed]
     public function change(): float
     {
+        if ($this->payingQrOrderId && $this->payingQrOrderData) {
+            return max(0, $this->amountReceived - $this->payingQrOrderData['total']);
+        }
         return max(0, $this->amountReceived - $this->total);
     }
 
@@ -127,10 +144,17 @@ class OrderBoard extends Component
     public function closePaymentModal(): void
     {
         $this->showPaymentModal = false;
+        $this->payingQrOrderId = null;
+        $this->payingQrOrderData = null;
     }
 
     public function processPayment(): void
     {
+        if ($this->payingQrOrderId) {
+            $this->processQrOrderPayment();
+            return;
+        }
+
         if (empty($this->cart)) {
             return;
         }
@@ -180,18 +204,99 @@ class OrderBoard extends Component
         $this->dispatch('order-completed');
     }
 
-    public function confirmQrOrder(int $orderId): void
+    public function processQrOrderPayment(): void
     {
-        $order = Order::waitingConfirmation()->findOrFail($orderId);
-        $order->update(['status' => 'pending']);
-        session()->flash('success', "Pesanan {$order->order_number} (Meja #{$order->table_number}) dikonfirmasi.");
+        $order = Order::waitingConfirmation()->with('items.menu')->findOrFail($this->payingQrOrderId);
+        $total = $order->total;
+
+        if ($this->amountReceived < $total) {
+            $this->addError('amountReceived', 'Amount received is less than total.');
+
+            return;
+        }
+
+        $changeAmount = $this->amountReceived - $total;
+
+        $order->update([
+            'status' => 'pending',
+            'amount_received' => $this->amountReceived,
+            'change_amount' => max(0, $changeAmount),
+            'user_id' => auth()->id(),
+        ]);
+
+        $this->lastOrder = [
+            'order_number' => $order->order_number,
+            'order_type' => ucfirst(str_replace('_', ' ', $order->order_type)) . ($order->table_number ? " (Meja #{$order->table_number})" : ''),
+            'cashier' => auth()->user()->name,
+            'date' => $order->created_at->format('d/m/Y H:i'),
+            'items' => $order->items->map(fn ($item) => [
+                'name' => $item->menu->name,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'subtotal' => $item->subtotal,
+                'notes' => $item->notes,
+            ])->toArray(),
+            'subtotal' => $order->subtotal,
+            'tax_rate' => $order->tax_rate,
+            'tax_amount' => $order->tax_amount,
+            'discount_amount' => $order->discount_amount,
+            'total' => $order->total,
+            'amount_received' => $order->amount_received,
+            'change_amount' => $order->change_amount,
+        ];
+
+        $this->payingQrOrderId = null;
+        $this->payingQrOrderData = null;
+        $this->amountReceived = 0;
+        $this->showPaymentModal = false;
+        $this->showReceiptModal = true;
+
+        session()->flash('success', "Pesanan {$order->order_number} " . ($order->table_number ? "(Meja #{$order->table_number}) " : "") . "dikonfirmasi.");
+        $this->dispatch('order-completed');
     }
 
-    public function rejectQrOrder(int $orderId): void
+    public function confirmQrOrder(int $orderId): void
+    {
+        $order = Order::waitingConfirmation()->with('items')->findOrFail($orderId);
+        $this->payingQrOrderId = $order->id;
+        $this->payingQrOrderData = [
+            'total' => $order->total,
+            'item_count' => $order->items->sum('quantity'),
+            'order_type' => $order->order_type,
+            'table_number' => $order->table_number,
+        ];
+        $this->amountReceived = $order->total;
+        $this->showPaymentModal = true;
+    }
+
+    public function openRejectModal(int $orderId): void
     {
         $order = Order::waitingConfirmation()->findOrFail($orderId);
+        $this->rejectingQrOrderId = $order->id;
+        $this->rejectingQrOrderNumber = $order->order_number;
+        $this->rejectingQrOrderTable = $order->table_number;
+        $this->showRejectModal = true;
+    }
+
+    public function closeRejectModal(): void
+    {
+        $this->showRejectModal = false;
+        $this->rejectingQrOrderId = null;
+        $this->rejectingQrOrderNumber = null;
+        $this->rejectingQrOrderTable = null;
+    }
+
+    public function rejectQrOrder(): void
+    {
+        if (! $this->rejectingQrOrderId) {
+            return;
+        }
+
+        $order = Order::waitingConfirmation()->findOrFail($this->rejectingQrOrderId);
         $order->update(['status' => 'cancelled']);
-        session()->flash('success', "Pesanan {$order->order_number} ditolak.");
+        
+        session()->flash('success', "Pesanan {$this->rejectingQrOrderNumber} ditolak.");
+        $this->closeRejectModal();
     }
 
     public function closeReceiptModal(): void
@@ -218,14 +323,21 @@ class OrderBoard extends Component
     public function render()
     {
         $menuService = app(MenuService::class);
+        $waitingOrders = Order::waitingConfirmation()
+            ->with('items.menu')
+            ->latest()
+            ->get();
+
+        $currentCount = $waitingOrders->count();
+        if ($this->previousWaitingCount !== null && $currentCount > $this->previousWaitingCount) {
+            $this->dispatch('new-qr-order');
+        }
+        $this->previousWaitingCount = $currentCount;
 
         return view('livewire.pos.order-board', [
             'menus' => $menuService->getMenusByCategory($this->selectedCategory, $this->searchQuery ?: null),
             'categories' => $menuService->getCategories(),
-            'waitingOrders' => Order::waitingConfirmation()
-                ->with('items.menu')
-                ->latest()
-                ->get(),
+            'waitingOrders' => $waitingOrders,
         ]);
     }
 }
