@@ -7,6 +7,8 @@
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC34A?style=for-the-badge&logo=alpine.js&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
+![FlowServe POS Preview](https://cdn.jsdelivr.net/gh/NadhifFauzilAdhim/FlowServePos@main/public/img/mockup/mockup-flowserve.webp)
+
 **FlowServe** is a modern **web-based Point of Sale (POS) system** designed specifically for cafés and restaurants. Built with the **TALL Stack (Tailwind, Alpine.js, Laravel, Livewire)**, FlowServe provides high operational speed with an intuitive interface for cashiers, kitchen staff, and business owners.
 
 ---
