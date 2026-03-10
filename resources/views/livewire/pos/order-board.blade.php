@@ -298,42 +298,82 @@
                     </div>
                 </div>
 
+                {{-- Payment Method Selector --}}
                 <div class="mb-6">
-                    <label class="text-gray-300 text-sm font-medium mb-2 block">Amount Received (Rp)</label>
-                    <input wire:model.live="amountReceived" type="number" min="0" step="1000"
-                        class="w-full rounded-xl border border-white/10 bg-black/40 text-white text-2xl font-bold h-14 px-4 text-center focus:border-primary/50 focus:outline-none focus:ring-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
-                        autofocus />
-                    @error('amountReceived')
-                        <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span>
-                    @enderror
-
-                    {{-- Quick amount buttons --}}
-                    <div class="grid grid-cols-3 gap-2 mt-3">
-                        @foreach ([ceil($currentTotal / 1000) * 1000, ceil($currentTotal / 5000) * 5000, ceil($currentTotal / 10000) * 10000, 50000, 100000, 200000] as $amount)
-                            <button wire:click="$set('amountReceived', {{ $amount }})"
-                                class="py-2 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/10 transition-all">
-                                {{ number_format($amount, 0, ',', '.') }}
-                            </button>
-                        @endforeach
+                    <label class="text-gray-300 text-sm font-medium mb-2 block">Payment Method</label>
+                    <div class="flex gap-2">
+                        <button wire:click="setPosPaymentMethod('cash')"
+                            class="flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2
+                            {{ $posPaymentMethod === 'cash' ? 'bg-emerald-600 border border-emerald-500/50 text-white shadow-[inset_0_0_12px_rgba(255,255,255,0.2)]' : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10' }}">
+                            <span class="material-symbols-outlined text-[18px]">payments</span>
+                            Cash
+                        </button>
+                        <button wire:click="setPosPaymentMethod('qris')"
+                            class="flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2
+                            {{ $posPaymentMethod === 'qris' ? 'bg-blue-600 border border-blue-500/50 text-white shadow-[inset_0_0_12px_rgba(255,255,255,0.2)]' : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10' }}">
+                            <span class="material-symbols-outlined text-[18px]">qr_code_2</span>
+                            QRIS
+                        </button>
                     </div>
                 </div>
 
-                @if ($amountReceived >= $currentTotal)
-                    <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                        <div class="flex justify-between text-lg font-bold">
-                            <span class="text-emerald-400">Change</span>
-                            <span class="text-emerald-400 drop-shadow-[0_0_4px_rgba(52,211,153,0.3)]">Rp
-                                {{ number_format($this->change, 0, ',', '.') }}</span>
+                @if ($posPaymentMethod === 'cash')
+                    <div class="mb-6">
+                        <label class="text-gray-300 text-sm font-medium mb-2 block">Amount Received (Rp)</label>
+                        <input wire:model.live="amountReceived" type="number" min="0" step="1000"
+                            class="w-full rounded-xl border border-white/10 bg-black/40 text-white text-2xl font-bold h-14 px-4 text-center focus:border-primary/50 focus:outline-none focus:ring-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                            autofocus />
+                        @error('amountReceived')
+                            <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span>
+                        @enderror
+
+                        {{-- Quick amount buttons --}}
+                        <div class="grid grid-cols-3 gap-2 mt-3">
+                            @foreach ([ceil($currentTotal / 1000) * 1000, ceil($currentTotal / 5000) * 5000, ceil($currentTotal / 10000) * 10000, 50000, 100000, 200000] as $amount)
+                                <button wire:click="$set('amountReceived', {{ $amount }})"
+                                    class="py-2 rounded-lg bg-white/5 border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/10 transition-all">
+                                    {{ number_format($amount, 0, ',', '.') }}
+                                </button>
+                            @endforeach
                         </div>
                     </div>
-                @endif
 
-                <button wire:click="processPayment" @if ($amountReceived < $currentTotal) disabled @endif
-                    class="w-full h-14 rounded-xl bg-emerald-600 border border-emerald-500/50 text-white text-lg font-bold hover:bg-emerald-500 transition-all shadow-[inset_0_0_16px_rgba(255,255,255,0.2),0_0_24px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span class="material-symbols-outlined">check_circle</span>
-                    <span wire:loading.remove wire:target="processPayment">Complete Payment</span>
-                    <span wire:loading wire:target="processPayment">Processing...</span>
-                </button>
+                    @if ($amountReceived >= $currentTotal)
+                        <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <div class="flex justify-between text-lg font-bold">
+                                <span class="text-emerald-400">Change</span>
+                                <span class="text-emerald-400 drop-shadow-[0_0_4px_rgba(52,211,153,0.3)]">Rp
+                                    {{ number_format($this->change, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    @endif
+
+                    <button wire:click="processPayment" @if ($amountReceived < $currentTotal) disabled @endif
+                        class="w-full h-14 rounded-xl bg-emerald-600 border border-emerald-500/50 text-white text-lg font-bold hover:bg-emerald-500 transition-all shadow-[inset_0_0_16px_rgba(255,255,255,0.2),0_0_24px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span wire:loading.remove wire:target="processPayment">Complete Payment</span>
+                        <span wire:loading wire:target="processPayment">Processing...</span>
+                    </button>
+                @else
+                    {{-- QRIS Payment Info --}}
+                    <div class="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                        <div class="flex items-start gap-3">
+                            <span class="material-symbols-outlined text-blue-400 text-xl shrink-0 mt-0.5">info</span>
+                            <div>
+                                <p class="text-blue-300 text-sm font-semibold mb-1">QRIS Payment</p>
+                                <p class="text-blue-400/80 text-xs leading-relaxed">A Midtrans payment popup will
+                                    appear. The customer can scan the QRIS code to complete payment.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button wire:click="processPayment"
+                        class="w-full h-14 rounded-xl bg-blue-600 border border-blue-500/50 text-white text-lg font-bold hover:bg-blue-500 transition-all shadow-[inset_0_0_16px_rgba(255,255,255,0.2),0_0_24px_rgba(59,130,246,0.4)] flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">qr_code_2</span>
+                        <span wire:loading.remove wire:target="processPayment">Open QRIS Payment</span>
+                        <span wire:loading wire:target="processPayment">Preparing...</span>
+                    </button>
+                @endif
             </div>
         </div>
     @endif
@@ -419,10 +459,15 @@
 
                         {{-- Payment --}}
                         <div class="mb-4 pb-3 border-b border-dashed border-gray-300 text-xs">
-                            <div class="flex justify-between"><span>Tunai</span><span>Rp
+                            <div class="flex justify-between"><span>Metode</span><span
+                                    class="font-semibold">{{ $lastOrder['payment_method'] ?? 'Tunai' }}</span></div>
+                            <div class="flex justify-between">
+                                <span>{{ $lastOrder['payment_method'] === 'QRIS' ? 'Dibayar' : 'Tunai' }}</span><span>Rp
                                     {{ number_format($lastOrder['amount_received'], 0, ',', '.') }}</span></div>
-                            <div class="flex justify-between font-bold"><span>Kembali</span><span>Rp
-                                    {{ number_format($lastOrder['change_amount'], 0, ',', '.') }}</span></div>
+                            @if (($lastOrder['change_amount'] ?? 0) > 0)
+                                <div class="flex justify-between font-bold"><span>Kembali</span><span>Rp
+                                        {{ number_format($lastOrder['change_amount'], 0, ',', '.') }}</span></div>
+                            @endif
                         </div>
 
                         {{-- Footer --}}
@@ -499,7 +544,6 @@
         $wire.on('new-qr-order', () => {
             try {
                 const ctx = new(window.AudioContext || window.webkitAudioContext)();
-                // Play two-tone chime
                 [440, 660].forEach((freq, i) => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
@@ -512,6 +556,37 @@
                     osc.stop(ctx.currentTime + i * 0.2 + 0.4);
                 });
             } catch (e) {}
+        });
+
+        // Handle POS QRIS payment via Midtrans Snap
+        $wire.on('open-pos-snap-payment', ({
+            snapToken,
+            orderId
+        }) => {
+            if (typeof snap === 'undefined') {
+                console.error('Midtrans Snap.js not loaded');
+                $wire.posQrisPaymentFailed(orderId);
+                return;
+            }
+
+            snap.pay(snapToken, {
+                onSuccess: function(result) {
+                    console.log('POS QRIS payment success:', result);
+                    $wire.posQrisPaymentSuccess(orderId);
+                },
+                onPending: function(result) {
+                    console.log('POS QRIS payment pending:', result);
+                    $wire.posQrisPaymentSuccess(orderId);
+                },
+                onError: function(result) {
+                    console.error('POS QRIS payment error:', result);
+                    $wire.posQrisPaymentFailed(orderId);
+                },
+                onClose: function() {
+                    console.log('POS Snap popup closed');
+                    $wire.posQrisPaymentFailed(orderId);
+                }
+            });
         });
     </script>
 @endscript

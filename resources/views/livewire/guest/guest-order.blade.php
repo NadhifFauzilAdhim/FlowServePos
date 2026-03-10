@@ -1,5 +1,34 @@
 <div class="flex flex-col min-h-[calc(100vh-64px)]">
-    @if ($showPaymentMethods)
+    @if ($showMidtransProcessing)
+        {{-- Midtrans Payment Processing --}}
+        <div class="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 text-center">
+            <div
+                class="size-20 rounded-full bg-blue-500/20 border-2 border-blue-500/40 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(59,130,246,0.3)] animate-pulse">
+                <span
+                    class="material-symbols-outlined text-blue-400 text-4xl drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]">qr_code_2</span>
+            </div>
+            <h2 class="text-white text-xl sm:text-2xl font-bold mb-2 drop-shadow-md">Memproses Pembayaran</h2>
+            <p class="text-gray-400 text-sm mb-2">Pesanan <strong class="text-primary">{{ $lastOrderNumber }}</strong>
+            </p>
+            <p class="text-gray-500 text-xs mb-8">Silakan selesaikan pembayaran di jendela yang muncul</p>
+
+            <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 w-full max-w-xs sm:max-w-sm">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-blue-400 text-xl shrink-0 mt-0.5">info</span>
+                    <div class="text-left">
+                        <p class="text-blue-300 text-sm font-semibold mb-1">Jangan tutup halaman ini</p>
+                        <p class="text-blue-400/80 text-xs leading-relaxed">Tunggu hingga proses pembayaran selesai.
+                            Halaman akan otomatis diperbarui.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button wire:click="midtransPaymentFailed"
+                class="mt-6 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-medium hover:bg-white/10 transition-all">
+                Kembali ke Pilihan Pembayaran
+            </button>
+        </div>
+    @elseif ($showPaymentMethods)
         {{-- Payment Method Selection --}}
         <div class="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 text-center">
             <div
@@ -8,7 +37,8 @@
                     class="material-symbols-outlined text-primary text-4xl drop-shadow-[0_0_8px_rgba(212,115,17,0.5)]">payments</span>
             </div>
             <h2 class="text-white text-xl sm:text-2xl font-bold mb-2 drop-shadow-md">Pilih Metode Pembayaran</h2>
-            <p class="text-gray-400 text-sm mb-2">Pesanan <strong class="text-primary">{{ $lastOrderNumber }}</strong></p>
+            <p class="text-gray-400 text-sm mb-2">Pesanan <strong class="text-primary">{{ $lastOrderNumber }}</strong>
+            </p>
             <p class="text-gray-500 text-xs mb-8">Meja #{{ $tableNumber }}</p>
 
             <div class="flex flex-col gap-4 w-full max-w-sm">
@@ -27,20 +57,20 @@
                         class="material-symbols-outlined text-gray-500 group-hover:text-primary transition-colors">chevron_right</span>
                 </button>
 
-                {{-- QRIS (Coming Soon) --}}
-                <div
-                    class="w-full p-5 rounded-2xl bg-black/20 border border-white/5 opacity-50 cursor-not-allowed text-left flex items-center gap-4 relative overflow-hidden">
+                {{-- QRIS / Online Payment via Midtrans --}}
+                <button wire:click="selectPayment('online')"
+                    class="w-full p-5 rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 hover:border-blue-500/50 hover:bg-black/50 transition-all group text-left flex items-center gap-4 shadow-lg">
                     <div
-                        class="size-14 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-blue-400/50 text-2xl">qr_code_2</span>
+                        class="size-14 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center shrink-0 shadow-[inset_0_0_10px_rgba(59,130,246,0.2)] group-hover:shadow-[inset_0_0_15px_rgba(59,130,246,0.3)]">
+                        <span class="material-symbols-outlined text-blue-400 text-2xl">qr_code_2</span>
                     </div>
                     <div class="flex-1">
-                        <h3 class="text-gray-400 font-bold text-base mb-0.5">QRIS</h3>
-                        <p class="text-gray-600 text-xs">Scan QRIS untuk pembayaran digital</p>
+                        <h3 class="text-white font-bold text-base mb-0.5">Pembayaran Online</h3>
+                        <p class="text-gray-400 text-xs">QRIS, e-Wallet, Transfer Bank, dll</p>
                     </div>
                     <span
-                        class="px-2.5 py-1 rounded-full bg-gray-700/50 border border-gray-600/30 text-gray-400 text-[10px] font-bold uppercase tracking-wider">Segera</span>
-                </div>
+                        class="material-symbols-outlined text-gray-500 group-hover:text-blue-400 transition-colors">chevron_right</span>
+                </button>
             </div>
         </div>
     @elseif ($orderSuccess)
@@ -51,8 +81,17 @@
                 <span
                     class="material-symbols-outlined text-emerald-400 text-5xl drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]">check_circle</span>
             </div>
-            <h2 class="text-white text-xl sm:text-2xl font-bold mb-2 drop-shadow-md">Pesanan Tercatat!</h2>
-            <p class="text-gray-400 text-sm mb-6">Silakan menuju kasir untuk pembayaran</p>
+
+            @if ($successPaymentMethod === 'online')
+                <h2 class="text-white text-xl sm:text-2xl font-bold mb-2 drop-shadow-md">Pembayaran Berhasil!</h2>
+                <p class="text-gray-400 text-sm mb-6">Pesanan Anda sedang disiapkan</p>
+            @elseif ($successPaymentMethod === 'online_pending')
+                <h2 class="text-white text-xl sm:text-2xl font-bold mb-2 drop-shadow-md">Menunggu Pembayaran</h2>
+                <p class="text-gray-400 text-sm mb-6">Selesaikan pembayaran sesuai instruksi</p>
+            @else
+                <h2 class="text-white text-xl sm:text-2xl font-bold mb-2 drop-shadow-md">Pesanan Tercatat!</h2>
+                <p class="text-gray-400 text-sm mb-6">Silakan menuju kasir untuk pembayaran</p>
+            @endif
 
             <div
                 class="bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl p-6 mb-6 w-full max-w-xs sm:max-w-sm shadow-lg">
@@ -65,16 +104,43 @@
                 </div>
             </div>
 
-            <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-8 w-full max-w-xs sm:max-w-sm">
-                <div class="flex items-start gap-3">
-                    <span class="material-symbols-outlined text-amber-400 text-xl shrink-0 mt-0.5">info</span>
-                    <div class="text-left">
-                        <p class="text-amber-300 text-sm font-semibold mb-1">Bayar di Kasir</p>
-                        <p class="text-amber-400/80 text-xs leading-relaxed">Tunjukkan nomor pesanan ke kasir. Pesanan
-                            akan diproses setelah pembayaran dikonfirmasi.</p>
+            @if ($successPaymentMethod === 'online')
+                <div
+                    class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-8 w-full max-w-xs sm:max-w-sm">
+                    <div class="flex items-start gap-3">
+                        <span
+                            class="material-symbols-outlined text-emerald-400 text-xl shrink-0 mt-0.5">check_circle</span>
+                        <div class="text-left">
+                            <p class="text-emerald-300 text-sm font-semibold mb-1">Pembayaran Diterima</p>
+                            <p class="text-emerald-400/80 text-xs leading-relaxed">Pesanan Anda sedang diproses dan akan
+                                segera disiapkan.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @elseif ($successPaymentMethod === 'online_pending')
+                <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-8 w-full max-w-xs sm:max-w-sm">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-blue-400 text-xl shrink-0 mt-0.5">schedule</span>
+                        <div class="text-left">
+                            <p class="text-blue-300 text-sm font-semibold mb-1">Pembayaran Tertunda</p>
+                            <p class="text-blue-400/80 text-xs leading-relaxed">Selesaikan pembayaran sesuai instruksi.
+                                Pesanan akan diproses setelah pembayaran diterima.</p>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-8 w-full max-w-xs sm:max-w-sm">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-amber-400 text-xl shrink-0 mt-0.5">info</span>
+                        <div class="text-left">
+                            <p class="text-amber-300 text-sm font-semibold mb-1">Bayar di Kasir</p>
+                            <p class="text-amber-400/80 text-xs leading-relaxed">Tunjukkan nomor pesanan ke kasir.
+                                Pesanan
+                                akan diproses setelah pembayaran dikonfirmasi.</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <button wire:click="newOrder"
                 class="px-8 py-3 rounded-xl bg-primary border border-primary/50 text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-[inset_0_0_16px_rgba(255,255,255,0.3),0_0_24px_rgba(212,115,17,0.5)] flex items-center gap-2">
@@ -174,11 +240,13 @@
 
         {{-- Floating Cart Button --}}
         @if (!empty($cart))
-            <div class="fixed bottom-0 left-0 right-0 z-40 p-4 max-w-lg sm:max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto">
+            <div
+                class="fixed bottom-0 left-0 right-0 z-40 p-4 max-w-lg sm:max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto">
                 <button wire:click="toggleCart"
                     class="w-full h-14 rounded-2xl bg-primary border border-primary/50 text-white font-bold hover:bg-primary/90 transition-all shadow-[inset_0_0_16px_rgba(255,255,255,0.3),0_0_30px_rgba(212,115,17,0.5)] flex items-center justify-between px-5">
                     <div class="flex items-center gap-3">
-                        <div class="size-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                        <div
+                            class="size-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
                             {{ $this->cartCount }}
                         </div>
                         <span class="text-sm">Lihat Keranjang</span>
@@ -331,3 +399,37 @@
         @endif
     @endif
 </div>
+
+@script
+    <script>
+        // Handle Midtrans Snap payment popup
+        $wire.on('open-snap-payment', ({
+            snapToken
+        }) => {
+            if (typeof snap === 'undefined') {
+                console.error('Midtrans Snap.js not loaded');
+                $wire.midtransPaymentFailed();
+                return;
+            }
+
+            snap.pay(snapToken, {
+                onSuccess: function(result) {
+                    console.log('Payment success:', result);
+                    $wire.midtransPaymentSuccess();
+                },
+                onPending: function(result) {
+                    console.log('Payment pending:', result);
+                    $wire.midtransPaymentPending();
+                },
+                onError: function(result) {
+                    console.error('Payment error:', result);
+                    $wire.midtransPaymentFailed();
+                },
+                onClose: function() {
+                    console.log('Snap popup closed');
+                    $wire.midtransPaymentFailed();
+                }
+            });
+        });
+    </script>
+@endscript

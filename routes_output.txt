@@ -1,0 +1,6 @@
+﻿
+  POST       api/midtrans/webhook midtrans.webhook ΓÇ║ MidtransContrΓÇª
+  POST       midtrans/snap-token/{order} midtrans.snap-token ΓÇ║ MidtransControΓÇª
+
+    Showing [2] routes
+

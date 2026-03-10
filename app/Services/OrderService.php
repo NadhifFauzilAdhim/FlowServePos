@@ -26,15 +26,19 @@ class OrderService
         ];
     }
 
+    /**
+     * Create a POS order (cashier-initiated, already paid).
+     */
     public function createOrder(
         array $cartItems,
         string $orderType,
         float $discount,
         float $amountReceived,
         int $userId,
-        ?string $notes = null
+        ?string $notes = null,
+        string $paymentMethod = 'cashier'
     ): Order {
-        return DB::transaction(function () use ($cartItems, $orderType, $discount, $amountReceived, $userId, $notes) {
+        return DB::transaction(function () use ($cartItems, $orderType, $discount, $amountReceived, $userId, $notes, $paymentMethod) {
             $totals = $this->calculateTotals($cartItems, $discount);
             $changeAmount = $amountReceived - $totals['total'];
 
@@ -50,6 +54,8 @@ class OrderService
                 'amount_received' => $amountReceived,
                 'change_amount' => max(0, $changeAmount),
                 'status' => 'pending',
+                'payment_status' => 'paid',
+                'payment_method' => $paymentMethod,
                 'notes' => $notes,
             ]);
 
@@ -68,6 +74,9 @@ class OrderService
         });
     }
 
+    /**
+     * Create a guest order (QR order, payment pending).
+     */
     public function createGuestOrder(
         array $cartItems,
         int $tableNumber,
@@ -86,9 +95,11 @@ class OrderService
                 'tax_amount' => $totals['tax_amount'],
                 'discount_amount' => 0,
                 'total' => $totals['total'],
-                'amount_received' => $totals['total'],
+                'amount_received' => 0,
                 'change_amount' => 0,
-                'status' => 'waiting_confirmation',
+                'status' => 'pending',
+                'payment_status' => 'pending',
+                'payment_method' => null,
                 'notes' => $notes,
             ]);
 
@@ -103,15 +114,29 @@ class OrderService
                 ]);
             }
 
-            Cache::forget('pos_waiting_orders');
-
             return $order->load('items.menu');
         });
     }
 
+    /**
+     * Confirm that a guest order will be paid at the cashier.
+     */
+    public function confirmCashierPayment(Order $order): void
+    {
+        $order->update([
+            'payment_method' => 'cashier',
+            'status' => 'waiting_confirmation',
+        ]);
+
+        Cache::forget('pos_waiting_orders');
+    }
+
     public function cancelOrder(Order $order): void
     {
-        $order->update(['status' => 'cancelled']);
+        $order->update([
+            'status' => 'cancelled',
+            'payment_status' => 'cancelled',
+        ]);
     }
 
     public function updateStatus(Order $order, string $status): void
@@ -135,6 +160,28 @@ class OrderService
     {
         return Order::today()
             ->with('items.menu', 'user')
+            ->latest()
+            ->get();
+    }
+
+    /**
+     * Get orders waiting for cashier confirmation OR paid online and pending processing.
+     */
+    public function getWaitingOrders()
+    {
+        return Order::where(function ($q) {
+            // Traditional: guest orders waiting for cashier confirmation
+            $q->where('status', 'waiting_confirmation')
+                ->where('payment_method', 'cashier')
+                ->whereNull('user_id');
+        })->orWhere(function ($q) {
+            // Online paid guest orders: ready to be processed
+            $q->where('payment_status', 'paid')
+                ->where('payment_method', 'online_payment')
+                ->where('status', 'pending')
+                ->whereNull('user_id');
+        })
+            ->with('items.menu')
             ->latest()
             ->get();
     }

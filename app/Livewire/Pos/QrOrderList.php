@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Pos;
 
-use App\Models\Order;
+use App\Services\OrderService;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -15,10 +15,7 @@ class QrOrderList extends Component
     public function render()
     {
         $waitingOrders = Cache::rememberForever('pos_waiting_orders', function () {
-            return Order::waitingConfirmation()
-                ->with('items.menu')
-                ->latest()
-                ->get();
+            return app(OrderService::class)->getWaitingOrders();
         });
 
         $currentCount = $waitingOrders->count();

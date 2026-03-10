@@ -6,6 +6,7 @@ use App\Models\Menu;
 use App\Models\Order;
 use App\Models\Setting;
 use App\Services\MenuService;
+use App\Services\MidtransService;
 use App\Services\OrderService;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
@@ -46,6 +47,8 @@ class OrderBoard extends Component
     public ?array $lastOrder = null;
 
     public ?int $previousWaitingCount = null;
+
+    public string $posPaymentMethod = 'cash';
 
     #[Computed]
     public function isStoreOpen(): bool
@@ -157,6 +160,7 @@ class OrderBoard extends Component
             return;
         }
         $this->amountReceived = $this->total;
+        $this->posPaymentMethod = 'cash';
         $this->showPaymentModal = true;
     }
 
@@ -165,22 +169,37 @@ class OrderBoard extends Component
         $this->showPaymentModal = false;
         $this->payingQrOrderId = null;
         $this->payingQrOrderData = null;
+        $this->posPaymentMethod = 'cash';
+    }
+
+    public function setPosPaymentMethod(string $method): void
+    {
+        $this->posPaymentMethod = $method;
+        if ($method === 'qris') {
+            $this->amountReceived = $this->payingQrOrderId
+                ? $this->payingQrOrderData['total']
+                : $this->total;
+        }
     }
 
     public function processPayment(): void
     {
         if ($this->payingQrOrderId) {
             $this->processQrOrderPayment();
-
             return;
         }
 
         if (empty($this->cart)) {
             return;
         }
+
+        if ($this->posPaymentMethod === 'qris') {
+            $this->processPosQrisPayment();
+            return;
+        }
+
         if ($this->amountReceived < $this->total) {
             $this->addError('amountReceived', 'Amount received is less than total.');
-
             return;
         }
 
@@ -193,35 +212,65 @@ class OrderBoard extends Component
             auth()->id()
         );
 
-        $this->lastOrder = [
-            'order_number' => $order->order_number,
-            'order_type' => ucfirst(str_replace('_', ' ', $order->order_type)),
-            'cashier' => auth()->user()->name,
-            'date' => $order->created_at->format('d/m/Y H:i'),
-            'items' => $order->items->map(fn ($item) => [
-                'name' => $item->menu->name,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->unit_price,
-                'subtotal' => $item->subtotal,
-                'notes' => $item->notes,
-            ])->toArray(),
-            'subtotal' => $order->subtotal,
-            'tax_rate' => $order->tax_rate,
-            'tax_amount' => $order->tax_amount,
-            'discount_amount' => $order->discount_amount,
-            'total' => $order->total,
-            'amount_received' => $order->amount_received,
-            'change_amount' => $order->change_amount,
-        ];
-
-        $this->cart = [];
-        $this->discount = 0;
-        $this->amountReceived = 0;
-        $this->orderType = 'dine_in';
-        $this->showPaymentModal = false;
+        $this->setLastOrderData($order);
+        $this->resetCartState();
         $this->showReceiptModal = true;
-
         $this->dispatch('order-completed');
+    }
+
+    /**
+     * Process a POS order with QRIS payment via Midtrans.
+     */
+    private function processPosQrisPayment(): void
+    {
+        $orderService = app(OrderService::class);
+        $order = $orderService->createOrder(
+            $this->cart,
+            $this->orderType,
+            $this->discount,
+            $this->total,
+            auth()->id(),
+            null,
+            'online_payment'
+        );
+
+        try {
+            $midtransService = app(MidtransService::class);
+            $snapToken = $midtransService->createSnapToken($order);
+
+            $this->dispatch('open-pos-snap-payment', snapToken: $snapToken, orderId: $order->id);
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to create QRIS payment. Try again.');
+        }
+    }
+
+    /**
+     * Called from JS when POS Snap payment succeeds.
+     */
+    public function posQrisPaymentSuccess(int $orderId): void
+    {
+        $order = Order::with('items.menu')->findOrFail($orderId);
+
+        $this->setLastOrderData($order);
+        $this->resetCartState();
+        $this->showReceiptModal = true;
+        $this->dispatch('order-completed');
+    }
+
+    /**
+     * Called from JS when POS Snap payment fails.
+     */
+    public function posQrisPaymentFailed(int $orderId): void
+    {
+        $order = Order::find($orderId);
+        if ($order) {
+            $order->update([
+                'payment_status' => 'failed',
+                'status' => 'cancelled',
+            ]);
+        }
+        session()->flash('error', 'QRIS payment cancelled or failed.');
+        $this->closePaymentModal();
     }
 
     public function processQrOrderPayment(): void
@@ -231,7 +280,6 @@ class OrderBoard extends Component
 
         if ($this->amountReceived < $total) {
             $this->addError('amountReceived', 'Amount received is less than total.');
-
             return;
         }
 
@@ -239,39 +287,41 @@ class OrderBoard extends Component
 
         $order->update([
             'status' => 'pending',
+            'payment_status' => 'paid',
+            'payment_method' => 'cashier',
             'amount_received' => $this->amountReceived,
             'change_amount' => max(0, $changeAmount),
             'user_id' => auth()->id(),
         ]);
 
-        $this->lastOrder = [
-            'order_number' => $order->order_number,
-            'order_type' => ucfirst(str_replace('_', ' ', $order->order_type)).($order->table_number ? " (Meja #{$order->table_number})" : ''),
-            'cashier' => auth()->user()->name,
-            'date' => $order->created_at->format('d/m/Y H:i'),
-            'items' => $order->items->map(fn ($item) => [
-                'name' => $item->menu->name,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->unit_price,
-                'subtotal' => $item->subtotal,
-                'notes' => $item->notes,
-            ])->toArray(),
-            'subtotal' => $order->subtotal,
-            'tax_rate' => $order->tax_rate,
-            'tax_amount' => $order->tax_amount,
-            'discount_amount' => $order->discount_amount,
-            'total' => $order->total,
-            'amount_received' => $order->amount_received,
-            'change_amount' => $order->change_amount,
-        ];
-
+        $this->setLastOrderData($order);
         $this->payingQrOrderId = null;
         $this->payingQrOrderData = null;
         $this->amountReceived = 0;
         $this->showPaymentModal = false;
         $this->showReceiptModal = true;
 
-        session()->flash('success', "Pesanan {$order->order_number} ".($order->table_number ? "(Meja #{$order->table_number}) " : '').'dikonfirmasi.');
+        session()->flash('success', "Pesanan {$order->order_number} " . ($order->table_number ? "(Meja #{$order->table_number}) " : '') . 'dikonfirmasi.');
+        Cache::forget('pos_waiting_orders');
+        $this->dispatch('order-completed');
+    }
+
+    /**
+     * Accept an online-paid order (no payment needed, already paid via Midtrans).
+     */
+    public function acceptOnlinePaidOrder(int $orderId): void
+    {
+        $order = Order::where('payment_status', 'paid')
+            ->where('payment_method', 'online_payment')
+            ->where('status', 'pending')
+            ->with('items.menu')
+            ->findOrFail($orderId);
+
+        $order->update([
+            'user_id' => auth()->id(),
+        ]);
+
+        session()->flash('success', "Pesanan online {$order->order_number} " . ($order->table_number ? "(Meja #{$order->table_number}) " : '') . 'diterima. Pembayaran sudah terverifikasi.');
         Cache::forget('pos_waiting_orders');
         $this->dispatch('order-completed');
     }
@@ -287,6 +337,7 @@ class OrderBoard extends Component
             'table_number' => $order->table_number,
         ];
         $this->amountReceived = $order->total;
+        $this->posPaymentMethod = 'cash';
         $this->showPaymentModal = true;
     }
 
@@ -314,7 +365,10 @@ class OrderBoard extends Component
         }
 
         $order = Order::waitingConfirmation()->findOrFail($this->rejectingQrOrderId);
-        $order->update(['status' => 'cancelled']);
+        $order->update([
+            'status' => 'cancelled',
+            'payment_status' => 'cancelled',
+        ]);
 
         session()->flash('success', "Pesanan {$this->rejectingQrOrderNumber} ditolak.");
         Cache::forget('pos_waiting_orders');
@@ -340,6 +394,42 @@ class OrderBoard extends Component
         $this->orderType = 'dine_in';
         $this->lastOrder = null;
         $this->showReceiptModal = false;
+        $this->posPaymentMethod = 'cash';
+    }
+
+    private function setLastOrderData(Order $order): void
+    {
+        $this->lastOrder = [
+            'order_number' => $order->order_number,
+            'order_type' => ucfirst(str_replace('_', ' ', $order->order_type)) . ($order->table_number ? " (Meja #{$order->table_number})" : ''),
+            'cashier' => auth()->user()->name,
+            'date' => $order->created_at->format('d/m/Y H:i'),
+            'payment_method' => $order->payment_method === 'online_payment' ? 'QRIS' : 'Tunai',
+            'items' => $order->items->map(fn ($item) => [
+                'name' => $item->menu->name,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'subtotal' => $item->subtotal,
+                'notes' => $item->notes,
+            ])->toArray(),
+            'subtotal' => $order->subtotal,
+            'tax_rate' => $order->tax_rate,
+            'tax_amount' => $order->tax_amount,
+            'discount_amount' => $order->discount_amount,
+            'total' => $order->total,
+            'amount_received' => $order->amount_received,
+            'change_amount' => $order->change_amount,
+        ];
+    }
+
+    private function resetCartState(): void
+    {
+        $this->cart = [];
+        $this->discount = 0;
+        $this->amountReceived = 0;
+        $this->orderType = 'dine_in';
+        $this->showPaymentModal = false;
+        $this->posPaymentMethod = 'cash';
     }
 
     public function render()

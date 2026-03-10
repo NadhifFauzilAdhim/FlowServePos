@@ -14,6 +14,7 @@ use App\Livewire\Kitchen\KitchenDisplay;
 use App\Livewire\Admin\TableManagement;
 use App\Livewire\Guest\GuestOrder;
 use App\Http\Controllers\ReportExportController;
+use App\Http\Controllers\MidtransController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,6 +32,10 @@ Route::post('/logout', function () {
 
 // Public guest ordering route (no auth required)
 Route::get('/order/{token}', GuestOrder::class)->name('guest.order');
+
+// Midtrans snap token (public, for guest orders)
+Route::post('/midtrans/snap-token/{order}', [MidtransController::class, 'createSnapToken'])
+    ->name('midtrans.snap-token');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {

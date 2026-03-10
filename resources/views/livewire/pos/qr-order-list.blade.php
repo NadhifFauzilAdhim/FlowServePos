@@ -28,6 +28,13 @@
                                     Meja #{{ $wo->table_number }}
                                 </span>
                                 <span class="text-white text-xs font-semibold">{{ $wo->order_number }}</span>
+                                @if ($wo->isPaid() && $wo->isOnlinePayment())
+                                    <span
+                                        class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+                                        <span class="material-symbols-outlined text-[10px]">check_circle</span>
+                                        Paid Online
+                                    </span>
+                                @endif
                             </div>
                             <span
                                 class="text-gray-500 text-[10px]">{{ $wo->created_at->diffForHumans(null, true, true) }}</span>
@@ -46,14 +53,23 @@
                             <span class="text-white text-sm font-bold">Rp
                                 {{ number_format($wo->total, 0, ',', '.') }}</span>
                             <div class="flex gap-1.5">
-                                <button wire:click="$parent.openRejectModal({{ $wo->id }})"
-                                    class="px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-all">
-                                    Reject
-                                </button>
-                                <button wire:click="$parent.confirmQrOrder({{ $wo->id }})"
-                                    class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/30 transition-all flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">check</span> Confirm
-                                </button>
+                                @if ($wo->isPaid() && $wo->isOnlinePayment())
+                                    {{-- Online paid orders: accept directly (no payment needed) --}}
+                                    <button wire:click="$parent.acceptOnlinePaidOrder({{ $wo->id }})"
+                                        class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/30 transition-all flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">check</span> Accept
+                                    </button>
+                                @else
+                                    {{-- Cashier orders: need payment confirmation --}}
+                                    <button wire:click="$parent.openRejectModal({{ $wo->id }})"
+                                        class="px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-all">
+                                        Reject
+                                    </button>
+                                    <button wire:click="$parent.confirmQrOrder({{ $wo->id }})"
+                                        class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/30 transition-all flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">check</span> Confirm
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </div>

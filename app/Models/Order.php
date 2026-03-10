@@ -25,6 +25,10 @@ class Order extends Model
         'change_amount',
         'table_number',
         'status',
+        'payment_status',
+        'payment_method',
+        'midtrans_snap_token',
+        'midtrans_transaction_id',
         'notes',
     ];
 
@@ -78,7 +82,11 @@ class Order extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->whereIn('status', ['pending', 'preparing', 'ready']);
+        return $query->whereIn('status', ['pending', 'preparing', 'ready'])
+            ->where(function (Builder $q) {
+                $q->where('payment_status', 'paid')
+                    ->orWhere('payment_method', 'cashier');
+            });
     }
 
     public function scopeWaitingConfirmation(Builder $query): Builder
@@ -86,9 +94,35 @@ class Order extends Model
         return $query->where('status', 'waiting_confirmation');
     }
 
+    public function scopePaymentPending(Builder $query): Builder
+    {
+        return $query->where('payment_status', 'pending');
+    }
+
+    public function scopePaymentPaid(Builder $query): Builder
+    {
+        return $query->where('payment_status', 'paid');
+    }
+
+    public function scopePaidOnline(Builder $query): Builder
+    {
+        return $query->where('payment_status', 'paid')
+            ->where('payment_method', 'online_payment');
+    }
+
     public function getFormattedTotalAttribute(): string
     {
         return 'Rp ' . number_format($this->total, 0, ',', '.');
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->payment_status === 'paid';
+    }
+
+    public function isOnlinePayment(): bool
+    {
+        return $this->payment_method === 'online_payment';
     }
 
     public static function generateOrderNumber(): string

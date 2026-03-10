@@ -3,9 +3,11 @@
 namespace App\Livewire\Guest;
 
 use App\Models\Menu;
+use App\Models\Order;
 use App\Models\Table;
 use App\Models\Setting;
 use App\Services\MenuService;
+use App\Services\MidtransService;
 use App\Services\OrderService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -24,6 +26,10 @@ class GuestOrder extends Component
     public bool $showPaymentMethods = false;
     public bool $orderSuccess = false;
     public ?string $lastOrderNumber = null;
+    public ?int $lastOrderId = null;
+    public ?string $snapToken = null;
+    public bool $showMidtransProcessing = false;
+    public ?string $successPaymentMethod = null;
 
     public function mount(string $token): void
     {
@@ -103,7 +109,7 @@ class GuestOrder extends Component
     #[Computed]
     public function taxAmount(): float
     {
-        $taxRate = (float) \App\Models\Setting::get('tax_rate', 8.00);
+        $taxRate = (float) Setting::get('tax_rate', 8.00);
         return round($this->subtotal * ($taxRate / 100), 2);
     }
 
@@ -136,6 +142,9 @@ class GuestOrder extends Component
         $this->showConfirmModal = false;
     }
 
+    /**
+     * Submit order — creates order with pending payment status.
+     */
     public function submitOrder(): void
     {
         if (! $this->isStoreOpen) return;
@@ -149,27 +158,105 @@ class GuestOrder extends Component
         );
 
         $this->lastOrderNumber = $order->order_number;
+        $this->lastOrderId = $order->id;
         $this->showConfirmModal = false;
         $this->showCart = false;
         $this->showPaymentMethods = true;
     }
 
+    /**
+     * Handle payment method selection.
+     */
     public function selectPayment(string $method): void
     {
+        $order = Order::find($this->lastOrderId);
+        if (!$order) return;
+
         if ($method === 'cashier') {
+            $orderService = app(OrderService::class);
+            $orderService->confirmCashierPayment($order);
+
             $this->showPaymentMethods = false;
             $this->orderSuccess = true;
+            $this->successPaymentMethod = 'cashier';
             $this->cart = [];
             $this->orderNotes = '';
+        } elseif ($method === 'online') {
+            $this->initiateOnlinePayment($order);
         }
-        // QRIS: coming soon
+    }
+
+    /**
+     * Initiate Midtrans online payment.
+     */
+    private function initiateOnlinePayment(Order $order): void
+    {
+        try {
+            $midtransService = app(MidtransService::class);
+            $this->snapToken = $midtransService->createSnapToken($order);
+
+            $this->showPaymentMethods = false;
+            $this->showMidtransProcessing = true;
+
+            // Dispatch event to trigger Snap.js popup in browser
+            $this->dispatch('open-snap-payment', snapToken: $this->snapToken);
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal memuat pembayaran. Silakan coba lagi.');
+        }
+    }
+
+    /**
+     * Called from JS when Midtrans Snap payment is successful.
+     */
+    public function midtransPaymentSuccess(): void
+    {
+        $order = Order::find($this->lastOrderId);
+        if (!$order) return;
+
+        // Webhook will handle actual status update, but we update UI state
+        $this->showMidtransProcessing = false;
+        $this->orderSuccess = true;
+        $this->successPaymentMethod = 'online';
+        $this->cart = [];
+        $this->orderNotes = '';
+        $this->snapToken = null;
+    }
+
+    /**
+     * Called from JS when Midtrans Snap payment is pending.
+     */
+    public function midtransPaymentPending(): void
+    {
+        $order = Order::find($this->lastOrderId);
+        if (!$order) return;
+
+        $this->showMidtransProcessing = false;
+        $this->orderSuccess = true;
+        $this->successPaymentMethod = 'online_pending';
+        $this->cart = [];
+        $this->orderNotes = '';
+        $this->snapToken = null;
+    }
+
+    /**
+     * Called from JS when Midtrans Snap payment fails or is closed.
+     */
+    public function midtransPaymentFailed(): void
+    {
+        $this->showMidtransProcessing = false;
+        $this->showPaymentMethods = true;
+        $this->snapToken = null;
     }
 
     public function newOrder(): void
     {
         $this->orderSuccess = false;
         $this->showPaymentMethods = false;
+        $this->showMidtransProcessing = false;
         $this->lastOrderNumber = null;
+        $this->lastOrderId = null;
+        $this->snapToken = null;
+        $this->successPaymentMethod = null;
     }
 
     public function render()
