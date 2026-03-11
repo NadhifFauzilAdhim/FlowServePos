@@ -13,20 +13,20 @@ class ReportService
 {
     public function getDashboardMetrics(): array
     {
-        return Cache::remember('dashboard_metrics', 60, function () {
+        return Cache::remember('dashboard_metrics', 30, function () {
             $today = today();
 
-            // Single aggregate query for today's orders
+            // Revenue counts all PAID orders today (regardless of kitchen status)
             $orderStats = Order::whereDate('created_at', $today)
                 ->select(
                     DB::raw('COUNT(*) as total_orders'),
-                    DB::raw('SUM(CASE WHEN status = "completed" THEN total ELSE 0 END) as total_revenue'),
-                    DB::raw('SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_orders')
+                    DB::raw('SUM(CASE WHEN payment_status = "paid" THEN total ELSE 0 END) as total_revenue'),
+                    DB::raw('SUM(CASE WHEN status = "pending" AND payment_status = "paid" THEN 1 ELSE 0 END) as pending_orders')
                 )
                 ->first();
 
             $bestSeller = OrderItem::query()
-                ->whereHas('order', fn($q) => $q->whereDate('created_at', $today)->completed())
+                ->whereHas('order', fn($q) => $q->whereDate('created_at', $today)->paymentPaid())
                 ->select('menu_id', DB::raw('SUM(quantity) as total_qty'))
                 ->groupBy('menu_id')
                 ->orderByDesc('total_qty')

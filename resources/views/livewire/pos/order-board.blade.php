@@ -1,4 +1,4 @@
-<div class="flex flex-1 overflow-hidden h-full" x-data
+<div class="flex flex-1 overflow-hidden h-full" x-data="{ cartOpen: localStorage.getItem('posCartOpen') !== 'false' }" x-init="$watch('cartOpen', val => localStorage.setItem('posCartOpen', val))"
     @print-receipt.window="
         const receiptEl = document.getElementById('receipt-content');
         if (!receiptEl) return;
@@ -140,8 +140,27 @@
         </div>
     </div>
 
+    {{-- Cart Toggle Button (visible when cart is collapsed) --}}
+    <button @click="cartOpen = true" x-show="!cartOpen" x-cloak
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 translate-x-4"
+        x-transition:enter-end="opacity-100 translate-x-0"
+        class="absolute right-4 top-4 z-30 flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary/90 border border-primary/50 text-white text-sm font-bold shadow-lg hover:bg-primary transition-all backdrop-blur-sm">
+        <span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+        <span>Order</span>
+        @if (!empty($cart))
+            <span class="size-5 flex items-center justify-center rounded-full bg-white/20 text-[11px] font-bold">{{ count($cart) }}</span>
+        @endif
+    </button>
+
     {{-- RIGHT: Cart Panel --}}
-    <div
+    <div x-show="cartOpen" x-cloak
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="translate-x-full"
+        x-transition:enter-end="translate-x-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="translate-x-0"
+        x-transition:leave-end="translate-x-full"
         class="w-[360px] flex flex-col h-full bg-black/20 backdrop-blur-2xl border-l border-white/10 shrink-0 shadow-[-8px_0_32px_-16px_rgba(0,0,0,0.8)] z-20">
 
         {{-- QR Orders Waiting Confirmation --}}
@@ -151,12 +170,18 @@
         <div class="p-5 border-b border-white/10 shrink-0 bg-black/10">
             <div class="flex justify-between items-center mb-5">
                 <h3 class="text-white text-xl font-bold leading-tight drop-shadow-md">Current Order</h3>
-                @if (!empty($cart))
-                    <button wire:click="resetCart"
-                        class="text-gray-400 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[14px]">delete_sweep</span> Clear
+                <div class="flex items-center gap-2">
+                    @if (!empty($cart))
+                        <button wire:click="resetCart"
+                            class="text-gray-400 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">delete_sweep</span> Clear
+                        </button>
+                    @endif
+                    <button @click="cartOpen = false"
+                        class="text-gray-400 hover:text-white transition-colors flex items-center">
+                        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
                     </button>
-                @endif
+                </div>
             </div>
             <div class="flex gap-2">
                 @foreach (['dine_in' => 'Dine In', 'takeout' => 'Takeout', 'delivery' => 'Delivery'] as $type => $label)
@@ -167,6 +192,22 @@
                     </button>
                 @endforeach
             </div>
+
+            {{-- Table Selector (Dine In only) --}}
+            @if ($orderType === 'dine_in')
+                <div class="mt-3">
+                    <select wire:model.live="selectedTable"
+                        class="w-full rounded-lg border border-white/10 bg-black/40 text-white h-10 px-3 text-sm font-medium focus:border-primary/50 focus:outline-none focus:ring-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] appearance-none cursor-pointer"
+                        style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 fill=%22%239ca3af%22 viewBox=%220 0 16 16%22%3E%3Cpath d=%22M4.646 5.646a.5.5 0 01.708 0L8 8.293l2.646-2.647a.5.5 0 01.708.708l-3 3a.5.5 0 01-.708 0l-3-3a.5.5 0 010-.708z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem;">
+                        <option value="" class="bg-[#1a1625] text-gray-400">— No Table —</option>
+                        @foreach ($this->tables as $table)
+                            <option value="{{ $table->number }}" class="bg-[#1a1625] text-white">
+                                Meja #{{ $table->number }}{{ $table->name ? " — {$table->name}" : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
         </div>
 
         {{-- Cart Items --}}

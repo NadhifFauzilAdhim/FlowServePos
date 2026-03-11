@@ -5,6 +5,7 @@ namespace App\Livewire\Pos;
 use App\Models\Menu;
 use App\Models\Order;
 use App\Models\Setting;
+use App\Models\Table;
 use App\Services\MenuService;
 use App\Services\MidtransService;
 use App\Services\OrderService;
@@ -49,6 +50,8 @@ class OrderBoard extends Component
     public ?int $previousWaitingCount = null;
 
     public string $posPaymentMethod = 'cash';
+
+    public ?int $selectedTable = null;
 
     #[Computed]
     public function isStoreOpen(): bool
@@ -113,6 +116,15 @@ class OrderBoard extends Component
     public function setOrderType(string $type): void
     {
         $this->orderType = $type;
+        if ($type !== 'dine_in') {
+            $this->selectedTable = null;
+        }
+    }
+
+    #[Computed]
+    public function tables(): \Illuminate\Support\Collection
+    {
+        return Table::where('is_active', true)->orderBy('number')->get();
     }
 
     public function filterByCategory(?int $id): void
@@ -209,7 +221,11 @@ class OrderBoard extends Component
             $this->orderType,
             $this->discount,
             $this->amountReceived,
-            auth()->id()
+            auth()->id(),
+            null,
+            'cashier',
+            'paid',
+            $this->orderType === 'dine_in' ? $this->selectedTable : null
         );
 
         $this->setLastOrderData($order);
@@ -409,6 +425,7 @@ class OrderBoard extends Component
         $this->discount = 0;
         $this->amountReceived = 0;
         $this->orderType = 'dine_in';
+        $this->selectedTable = null;
         $this->lastOrder = null;
         $this->showReceiptModal = false;
         $this->posPaymentMethod = 'cash';
@@ -445,6 +462,7 @@ class OrderBoard extends Component
         $this->discount = 0;
         $this->amountReceived = 0;
         $this->orderType = 'dine_in';
+        $this->selectedTable = null;
         $this->showPaymentModal = false;
         $this->posPaymentMethod = 'cash';
     }

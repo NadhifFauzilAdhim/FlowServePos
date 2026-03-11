@@ -37,9 +37,10 @@ class OrderService
         int $userId,
         ?string $notes = null,
         string $paymentMethod = 'cashier',
-        string $paymentStatus = 'paid'
+        string $paymentStatus = 'paid',
+        ?int $tableNumber = null
     ): Order {
-        return DB::transaction(function () use ($cartItems, $orderType, $discount, $amountReceived, $userId, $notes, $paymentMethod, $paymentStatus) {
+        return DB::transaction(function () use ($cartItems, $orderType, $discount, $amountReceived, $userId, $notes, $paymentMethod, $paymentStatus, $tableNumber) {
             $totals = $this->calculateTotals($cartItems, $discount);
             $changeAmount = $amountReceived - $totals['total'];
 
@@ -47,6 +48,7 @@ class OrderService
                 'user_id' => $userId,
                 'order_number' => Order::generateOrderNumber(),
                 'order_type' => $orderType,
+                'table_number' => $tableNumber,
                 'subtotal' => $totals['subtotal'],
                 'tax_rate' => $totals['tax_rate'],
                 'tax_amount' => $totals['tax_amount'],
