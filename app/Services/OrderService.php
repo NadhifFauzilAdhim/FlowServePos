@@ -36,9 +36,10 @@ class OrderService
         float $amountReceived,
         int $userId,
         ?string $notes = null,
-        string $paymentMethod = 'cashier'
+        string $paymentMethod = 'cashier',
+        string $paymentStatus = 'paid'
     ): Order {
-        return DB::transaction(function () use ($cartItems, $orderType, $discount, $amountReceived, $userId, $notes, $paymentMethod) {
+        return DB::transaction(function () use ($cartItems, $orderType, $discount, $amountReceived, $userId, $notes, $paymentMethod, $paymentStatus) {
             $totals = $this->calculateTotals($cartItems, $discount);
             $changeAmount = $amountReceived - $totals['total'];
 
@@ -54,7 +55,7 @@ class OrderService
                 'amount_received' => $amountReceived,
                 'change_amount' => max(0, $changeAmount),
                 'status' => 'pending',
-                'payment_status' => 'paid',
+                'payment_status' => $paymentStatus,
                 'payment_method' => $paymentMethod,
                 'notes' => $notes,
             ]);

@@ -57,20 +57,20 @@
                         class="material-symbols-outlined text-gray-500 group-hover:text-primary transition-colors">chevron_right</span>
                 </button>
 
-                {{-- QRIS / Online Payment via Midtrans --}}
-                <button wire:click="selectPayment('online')"
-                    class="w-full p-5 rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 hover:border-blue-500/50 hover:bg-black/50 transition-all group text-left flex items-center gap-4 shadow-lg">
+                {{-- Online Payment temporarily disabled --}}
+                <div
+                    class="w-full p-5 rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 text-left flex items-center gap-4 shadow-lg opacity-50 cursor-not-allowed">
                     <div
-                        class="size-14 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center shrink-0 shadow-[inset_0_0_10px_rgba(59,130,246,0.2)] group-hover:shadow-[inset_0_0_15px_rgba(59,130,246,0.3)]">
-                        <span class="material-symbols-outlined text-blue-400 text-2xl">qr_code_2</span>
+                        class="size-14 rounded-xl bg-gray-500/20 border border-gray-500/30 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-gray-500 text-2xl">qr_code_2</span>
                     </div>
                     <div class="flex-1">
-                        <h3 class="text-white font-bold text-base mb-0.5">Pembayaran Online</h3>
-                        <p class="text-gray-400 text-xs">QRIS, e-Wallet, Transfer Bank, dll</p>
+                        <h3 class="text-gray-400 font-bold text-base mb-0.5">Pembayaran Online</h3>
+                        <p class="text-gray-500 text-xs">Sedang dalam perbaikan</p>
                     </div>
                     <span
-                        class="material-symbols-outlined text-gray-500 group-hover:text-blue-400 transition-colors">chevron_right</span>
-                </button>
+                        class="material-symbols-outlined text-gray-600">construction</span>
+                </div>
             </div>
         </div>
     @elseif ($orderSuccess)

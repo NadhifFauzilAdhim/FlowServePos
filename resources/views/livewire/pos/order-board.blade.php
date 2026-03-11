@@ -308,11 +308,12 @@
                             <span class="material-symbols-outlined text-[18px]">payments</span>
                             Cash
                         </button>
-                        <button wire:click="setPosPaymentMethod('qris')"
-                            class="flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2
-                            {{ $posPaymentMethod === 'qris' ? 'bg-blue-600 border border-blue-500/50 text-white shadow-[inset_0_0_12px_rgba(255,255,255,0.2)]' : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10' }}">
+                        {{-- QRIS temporarily disabled --}}
+                        <button disabled
+                            class="flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 bg-white/5 border border-white/10 text-gray-500 cursor-not-allowed opacity-50">
                             <span class="material-symbols-outlined text-[18px]">qr_code_2</span>
                             QRIS
+                            <span class="text-[10px] ml-1">(Maintenance)</span>
                         </button>
                     </div>
                 </div>
@@ -463,7 +464,8 @@
                                     class="font-semibold">{{ $lastOrder['payment_method'] ?? 'Tunai' }}</span></div>
                             <div class="flex justify-between">
                                 <span>{{ $lastOrder['payment_method'] === 'QRIS' ? 'Dibayar' : 'Tunai' }}</span><span>Rp
-                                    {{ number_format($lastOrder['amount_received'], 0, ',', '.') }}</span></div>
+                                    {{ number_format($lastOrder['amount_received'], 0, ',', '.') }}</span>
+                            </div>
                             @if (($lastOrder['change_amount'] ?? 0) > 0)
                                 <div class="flex justify-between font-bold"><span>Kembali</span><span>Rp
                                         {{ number_format($lastOrder['change_amount'], 0, ',', '.') }}</span></div>
@@ -576,7 +578,7 @@
                 },
                 onPending: function(result) {
                     console.log('POS QRIS payment pending:', result);
-                    $wire.posQrisPaymentSuccess(orderId);
+                    $wire.posQrisPaymentPending(orderId);
                 },
                 onError: function(result) {
                     console.error('POS QRIS payment error:', result);

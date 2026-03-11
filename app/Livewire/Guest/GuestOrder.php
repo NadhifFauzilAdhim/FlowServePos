@@ -36,6 +36,24 @@ class GuestOrder extends Component
         $this->table = Table::where('qr_token', $token)
             ->where('is_active', true)
             ->firstOrFail();
+
+        // Handle redirect back from Midtrans payment
+        $paymentStatus = request()->query('payment_status');
+        $orderId = request()->query('order_id');
+
+        if ($paymentStatus && $orderId) {
+            $order = Order::find($orderId);
+            if ($order && $order->table_number === $this->table->number) {
+                $this->lastOrderNumber = $order->order_number;
+                $this->lastOrderId = $order->id;
+                $this->orderSuccess = true;
+                $this->successPaymentMethod = match ($paymentStatus) {
+                    'success' => 'online',
+                    'pending' => 'online_pending',
+                    default => 'online',
+                };
+            }
+        }
     }
 
     #[Computed]

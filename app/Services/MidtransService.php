@@ -25,13 +25,32 @@ class MidtransService
      */
     public function createSnapToken(Order $order): string
     {
-        // Build finish redirect URL
-        $finishUrl = url('/');
+        // Build redirect URLs based on order source (POS vs Guest)
         if ($order->table_number) {
+            // Guest orders: redirect back to guest order page with status
             $table = \App\Models\Table::where('number', $order->table_number)->first();
             if ($table) {
-                $finishUrl = route('guest.order', $table->qr_token);
+                $finishUrl = route('guest.order', [
+                    'token' => $table->qr_token,
+                    'payment_status' => 'success',
+                    'order_id' => $order->id,
+                ]);
+                $unfinishUrl = route('guest.order', [
+                    'token' => $table->qr_token,
+                    'payment_status' => 'pending',
+                    'order_id' => $order->id,
+                ]);
+                $errorUrl = route('guest.order', [
+                    'token' => $table->qr_token,
+                    'payment_status' => 'failed',
+                    'order_id' => $order->id,
+                ]);
+            } else {
+                $finishUrl = $unfinishUrl = $errorUrl = url('/');
             }
+        } else {
+            // POS orders: redirect back to POS page
+            $finishUrl = $unfinishUrl = $errorUrl = route('pos');
         }
 
         $params = [
@@ -47,6 +66,8 @@ class MidtransService
             ])->toArray(),
             'callbacks' => [
                 'finish' => $finishUrl,
+                'unfinish' => $unfinishUrl,
+                'error' => $errorUrl,
             ],
         ];
 
@@ -94,6 +115,20 @@ class MidtransService
 
         Log::info("Midtrans webhook: Order {$orderNumber}, status={$transactionStatus}, fraud={$fraudStatus}");
 
+        // Guard: NEVER update orders that are in a terminal state.
+        // This prevents cancelled/failed orders from being resurrected by late webhooks.
+        if (in_array($order->status, ['cancelled', 'completed'])) {
+            Log::info("Midtrans webhook: Blocked update for {$orderNumber} — order status is {$order->status}");
+
+            return;
+        }
+
+        if (in_array($order->payment_status, ['failed', 'cancelled'])) {
+            Log::info("Midtrans webhook: Blocked update for {$orderNumber} — payment status is {$order->payment_status}");
+
+            return;
+        }
+
         match ($transactionStatus) {
             'capture' => $this->handleCapture($order, $fraudStatus),
             'settlement' => $this->handleSettlement($order),
@@ -128,6 +163,7 @@ class MidtransService
     {
         $order->update([
             'payment_status' => 'failed',
+            'status' => 'cancelled',
         ]);
 
         Log::info("Midtrans: Order {$order->order_number} payment {$status}");
@@ -135,6 +171,13 @@ class MidtransService
 
     private function markAsPaid(Order $order): void
     {
+        // Guard: do not re-process already paid orders
+        if ($order->payment_status === 'paid') {
+            Log::info("Midtrans: Order {$order->order_number} already paid, skipping");
+
+            return;
+        }
+
         $order->update([
             'payment_status' => 'paid',
             'payment_method' => 'online_payment',

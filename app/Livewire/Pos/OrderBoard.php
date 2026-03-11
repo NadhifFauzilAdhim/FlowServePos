@@ -231,7 +231,8 @@ class OrderBoard extends Component
             $this->total,
             auth()->id(),
             null,
-            'online_payment'
+            'online_payment',
+            'pending'
         );
 
         try {
@@ -240,6 +241,7 @@ class OrderBoard extends Component
 
             $this->dispatch('open-pos-snap-payment', snapToken: $snapToken, orderId: $order->id);
         } catch (\Exception $e) {
+            $order->update(['payment_status' => 'failed', 'status' => 'cancelled']);
             session()->flash('error', 'Failed to create QRIS payment. Try again.');
         }
     }
@@ -250,6 +252,12 @@ class OrderBoard extends Component
     public function posQrisPaymentSuccess(int $orderId): void
     {
         $order = Order::with('items.menu')->findOrFail($orderId);
+
+        // Mark as paid now that payment is confirmed
+        $order->update([
+            'payment_status' => 'paid',
+            'status' => 'pending',
+        ]);
 
         $this->setLastOrderData($order);
         $this->resetCartState();
@@ -270,6 +278,15 @@ class OrderBoard extends Component
             ]);
         }
         session()->flash('error', 'QRIS payment cancelled or failed.');
+        $this->closePaymentModal();
+    }
+
+    /**
+     * Called from JS when POS Snap payment is pending.
+     */
+    public function posQrisPaymentPending(int $orderId): void
+    {
+        session()->flash('info', 'Payment is still pending. The order will be processed once payment is confirmed.');
         $this->closePaymentModal();
     }
 
